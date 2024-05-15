@@ -1,0 +1,8 @@
+CLIPNET consists of 9 model folds which are too large to reasonably package
+into a GitHub repo. They can be downloaded from the following Zenodo link:
+
+https://zenodo.org/doi/10.5281/zenodo.10408622
+
+These are the base models trained in a genetically diverse set of LCLs.
+These are not used for prediction/interpretation for this project, but 
+serve as the base model to be transferred to K562.
