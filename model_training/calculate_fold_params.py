@@ -1,18 +1,18 @@
 """
-Calculates dataset parameters needed by clipnet for the K562 dataset.
+Calculates dataset parameters needed by clipnet. Supply a path to the processed data
+and an output directory. This script will write json files to the output directory
+for use in model training.
 """
 
+import argparse
 import json
-import multiprocessing as mp
 import os
 
 import numpy as np
 
-datadir = "/home2/ayh8/data/k562/k562_data_folds/"
 
-
-def write_dataset_params(i):
-    outdir = f"/home2/ayh8/k562_ensemble_models/f{i + 1}/"
+def write_dataset_params(i, datadir, outdir):
+    outdir = f"{outdir}/f{i + 1}/"
     os.makedirs(outdir, exist_ok=True)
 
     test_folds = [i + 1]
@@ -73,5 +73,37 @@ def write_dataset_params(i):
         json.dump(dataset_params, handle, indent=4, sort_keys=True)
 
 
-with mp.Pool(9) as p:
-    p.map(write_dataset_params, range(9))
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("datadir", type=str, help="directory containing data")
+    parser.add_argument(
+        "outdir",
+        type=str,
+        help="directory to save dataset params to (where models will be saved)",
+    )
+    parser.add_argument(
+        "--threads", type=int, default=9, help="number of threads to use"
+    )
+    args = parser.parse_args()
+    if args.threads == 1:
+        for i in range(9):
+            write_dataset_params(i, args.datadir, args.outdir)
+    elif args.threads > 1:
+        import itertools
+        import multiprocessing as mp
+
+        with mp.Pool(9) as p:
+            p.starmap(
+                write_dataset_params,
+                zip(
+                    range(9),
+                    itertools.repeat(args.datadir),
+                    itertools.repeat(args.outdir),
+                ),
+            )
+    else:
+        raise ValueError("threads must be >= 1")
+
+
+if __name__ == "__main__":
+    main()
