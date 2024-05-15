@@ -15,13 +15,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-import pysam
-import sys
-import os
 import logging
+import os
+import sys
+
 import numpy as np
 import pandas as pd
-
+import pysam
 
 NP_DT_RANGE = (127, 32767, 2147483647, 9223372036854775807)
 NP_DT_NAME = (np.int8, np.int16, np.int32, np.int64)

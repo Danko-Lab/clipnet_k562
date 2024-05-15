@@ -17,12 +17,14 @@
 # GNU General Public License for more details.
 import sys
 import warnings
+
 try:
     import numpy as np
-    from scipy.stats import poisson, binom_test, fisher_exact, nbinom
-    from scipy.special import gamma, digamma, polygamma, gammaln, psi, factorial
     from scipy.optimize import fmin_l_bfgs_b as BFGS
     from scipy.optimize import newton
+    from scipy.special import digamma, factorial, gamma, gammaln, polygamma, psi
+    from scipy.stats import binom_test, fisher_exact, nbinom, poisson
+
     # from statsmodels.base.model import GenericLikelihoodModel
 except ImportError as e:
     missing_package = str(e).replace("No module named '", "").replace("'", "")
@@ -60,7 +62,7 @@ def zip_moment_estimators(windows):
     """
     s2 = windows.var()
     m = windows.mean()
-    m2 = m ** 2
+    m2 = m**2
     if m >= s2:
         pi_mo = 0
         lamb_mo = m
@@ -82,7 +84,7 @@ def zip_probability_estimator(windows):
     hat_p0 = sum(windows == 0) / windows.shape[0]
     s2 = windows.var()
     m = windows.mean()
-    m2 = m ** 2
+    m2 = m**2
     if m >= s2:
         pi_pe = 0
         lamb_mo = m
@@ -93,7 +95,15 @@ def zip_probability_estimator(windows):
     return lamb_mo, pi_pe
 
 
-def zip_em(windows, init_lamb=None, init_pi=None, max_iter=1000, stop_diff=0.0001, debug=False, output_to=""):
+def zip_em(
+    windows,
+    init_lamb=None,
+    init_pi=None,
+    max_iter=1000,
+    stop_diff=0.0001,
+    debug=False,
+    output_to="",
+):
     """
     EM for Zero-inflated Poisson
     Parameters
@@ -134,7 +144,7 @@ def zip_em(windows, init_lamb=None, init_pi=None, max_iter=1000, stop_diff=0.000
         return windows.mean(), 0, None, np.nan
 
     I = len(windows)
-    prev_likelihood = 0.
+    prev_likelihood = 0.0
     likelihoods = []
     u_ele, c_ele = np.unique(windows, return_counts=True)
     while True:
@@ -148,15 +158,16 @@ def zip_em(windows, init_lamb=None, init_pi=None, max_iter=1000, stop_diff=0.000
         u_pmf = (1 - pi) * poisson.pmf(u_ele, lamb)
         u_pmf[np.where(u_ele == 0)] += pi
         u_pmf[u_pmf < 10e-16] = 10e-16
-        likelihood = (np.log(u_pmf)*c_ele).sum()
+        likelihood = (np.log(u_pmf) * c_ele).sum()
         likelihoods.append(likelihood)
         if n_iter > 0:
             if abs(likelihood - prev_likelihood) < stop_diff:
                 if debug and output_to != "":
                     import matplotlib.pyplot as plt
+
                     plt.plot(likelihoods)
-                    plt.ylabel('Log-likelihood')
-                    plt.xlabel('Iteration')
+                    plt.ylabel("Log-likelihood")
+                    plt.xlabel("Iteration")
                     plt.tight_layout()
                     plt.savefig(output_to, bbox_inches="tight", transparent=True)
                 return lamb, pi, True, likelihood
@@ -176,11 +187,13 @@ def fit_nbinom(X, initial_params=None):
 
         # MLE estimate based on the formula on Wikipedia:
         # http://en.wikipedia.org/wiki/Negative_binomial_distribution#Maximum_likelihood_estimation
-        result = np.sum(gammaln(X + r)) \
-                 - np.sum(np.log(factorial(X))) \
-                 - N * (gammaln(r)) \
-                 + N * r * np.log(p) \
-                 + np.sum(X * np.log(1 - (p if p < 1 else 1 - infinitesimal)))
+        result = (
+            np.sum(gammaln(X + r))
+            - np.sum(np.log(factorial(X)))
+            - N * (gammaln(r))
+            + N * r * np.log(p)
+            + np.sum(X * np.log(1 - (p if p < 1 else 1 - infinitesimal)))
+        )
 
         return -result
 
@@ -188,7 +201,7 @@ def fit_nbinom(X, initial_params=None):
         # reasonable initial values (from fitdistr function in R)
         m = np.mean(X)
         v = np.var(X)
-        size = (m ** 2) / (v - m) if v > m else 10
+        size = (m**2) / (v - m) if v > m else 10
 
         # convert mu/size parameterization to prob/size
         p0 = size / ((size + m) if size + m != 0 else 1)
@@ -197,12 +210,14 @@ def fit_nbinom(X, initial_params=None):
 
     try:
         bounds = [(infinitesimal, None), (infinitesimal, 1)]
-        optimres = BFGS(log_likelihood,
-                        x0=initial_params,
-                        # fprime=log_likelihood_deriv,
-                        args=(X,),
-                        approx_grad=1,
-                        bounds=bounds)
+        optimres = BFGS(
+            log_likelihood,
+            x0=initial_params,
+            # fprime=log_likelihood_deriv,
+            args=(X,),
+            approx_grad=1,
+            bounds=bounds,
+        )
 
         params = optimres[0]
     except:
@@ -238,9 +253,19 @@ def fit_nb(X, Z, pi, initial_params=None):
         """
         # complete log-likelihood function
         try:
-            result = np.sum(Z * np.log(pi)) + np.sum((1 - Z) * (
-                    np.log(one_minus_pi) + gammaln(X + k) - gammaln(X + 1) - gammaln(k) + k * np.log(k) - k * np.log(
-                muk) + X * np.log(mu) - X * np.log(muk)))
+            result = np.sum(Z * np.log(pi)) + np.sum(
+                (1 - Z)
+                * (
+                    np.log(one_minus_pi)
+                    + gammaln(X + k)
+                    - gammaln(X + 1)
+                    - gammaln(k)
+                    + k * np.log(k)
+                    - k * np.log(muk)
+                    + X * np.log(mu)
+                    - X * np.log(muk)
+                )
+            )
         except Exception:
             print("pi", pi, np.log(pi))
             print("1-pi", np.log(1 - pi))
@@ -265,7 +290,7 @@ def fit_nb(X, Z, pi, initial_params=None):
         # reasonable initial values (from fitdistr function in R)
         m = np.mean(X)
         v = np.var(X)
-        size = (m ** 2) / (v - m) if v > m else 10
+        size = (m**2) / (v - m) if v > m else 10
 
         # convert mu/size parameters to mu/k
         p_0 = size / ((size + m) if size + m != 0 else 1)
@@ -274,18 +299,28 @@ def fit_nb(X, Z, pi, initial_params=None):
         initial_params = np.array([mu_0, k_0])
 
     bounds = [(infinitesimal, None), (infinitesimal, None)]
-    optimres = BFGS(log_likelihood,
-                    x0=initial_params,
-                    # fprime=log_likelihood_deriv,
-                    args=(X, Z, pi),
-                    approx_grad=1,
-                    bounds=bounds)
+    optimres = BFGS(
+        log_likelihood,
+        x0=initial_params,
+        # fprime=log_likelihood_deriv,
+        args=(X, Z, pi),
+        approx_grad=1,
+        bounds=bounds,
+    )
     params = optimres[0]
     return params[0], params[1]
 
 
-def zinb_em(windows, init_mu=None, init_k=None, init_pi=None, max_iter=1000, stop_diff=0.0001, debug=False,
-            output_to=""):
+def zinb_em(
+    windows,
+    init_mu=None,
+    init_k=None,
+    init_pi=None,
+    max_iter=1000,
+    stop_diff=0.0001,
+    debug=False,
+    output_to="",
+):
     """
     EM for Zero-inflated Negative Binomial
     :param windows:
@@ -306,7 +341,7 @@ def zinb_em(windows, init_mu=None, init_k=None, init_pi=None, max_iter=1000, sto
         if nn_zero > 0:
             init_mu = np.mean(windows[not_zero])
             s2 = np.var(windows[not_zero])
-            size = init_mu ** 2 / (s2 - init_mu + 0.0001)
+            size = init_mu**2 / (s2 - init_mu + 0.0001)
             size = size if size > 0 else 0.0001
             init_k = 1 / size
         else:
@@ -322,7 +357,7 @@ def zinb_em(windows, init_mu=None, init_k=None, init_pi=None, max_iter=1000, sto
     hat_z = np.zeros(len(windows))
     zero_elements = windows == 0
     n = len(windows)
-    prev_likelihood = 0.
+    prev_likelihood = 0.0
     likelihoods = []
 
     while True:
@@ -330,7 +365,9 @@ def zinb_em(windows, init_mu=None, init_k=None, init_pi=None, max_iter=1000, sto
         # in case of overflow
         # nb_term = k_pre / (mu_pre + k_pre)
         # if nb_term < 1 and k_pre >
-        hat_z[zero_elements] = pi_pre / (pi_pre + (1 - pi_pre) * ((k_pre / (mu_pre + k_pre)) ** k_pre))
+        hat_z[zero_elements] = pi_pre / (
+            pi_pre + (1 - pi_pre) * ((k_pre / (mu_pre + k_pre)) ** k_pre)
+        )
         # maximization
         pi = hat_z.sum() / n
         # mu & k
@@ -338,17 +375,25 @@ def zinb_em(windows, init_mu=None, init_k=None, init_pi=None, max_iter=1000, sto
         # estimate likelihood
         pos_pmf = nbinom.pmf(windows, 1 / k, 1 / (1 + k * mu))
         pos_pmf[pos_pmf == 0] = infinitesimal
-        likelihood = np.sum(zero_elements * np.log(pi if pi > 0 else infinitesimal)) + np.log(pos_pmf).sum()
+        likelihood = (
+            np.sum(zero_elements * np.log(pi if pi > 0 else infinitesimal))
+            + np.log(pos_pmf).sum()
+        )
         likelihoods.append(likelihood)
 
         if n_iter > 0:
-            if abs(likelihood - prev_likelihood) < stop_diff or abs(mu - mu_pre) < stop_diff or abs(
-                    k - k_pre) < stop_diff or abs(pi - pi_pre) < stop_diff:
+            if (
+                abs(likelihood - prev_likelihood) < stop_diff
+                or abs(mu - mu_pre) < stop_diff
+                or abs(k - k_pre) < stop_diff
+                or abs(pi - pi_pre) < stop_diff
+            ):
                 if debug and output_to != "":
                     import matplotlib.pyplot as plt
+
                     plt.plot(likelihoods)
-                    plt.ylabel('Log-likelihood')
-                    plt.xlabel('Iteration')
+                    plt.ylabel("Log-likelihood")
+                    plt.xlabel("Iteration")
                     plt.tight_layout()
                     plt.savefig(output_to, bbox_inches="tight", transparent=True)
                 return mu, k, pi, True, likelihood
@@ -368,11 +413,12 @@ def zip_fit_mcmc(windows):
     :return:
     """
     import pymc3 as pm
-    with pm.Model() as ZIP:
-        psi = pm.Beta('p', 1, 1)
-        lam = pm.Gamma('lam', 2, 0.1)
 
-        y = pm.ZeroInflatedPoisson('y', lam, psi, observed=windows)
+    with pm.Model() as ZIP:
+        psi = pm.Beta("p", 1, 1)
+        lam = pm.Gamma("lam", 2, 0.1)
+
+        y = pm.ZeroInflatedPoisson("y", lam, psi, observed=windows)
         trace = pm.sample(1000)
     pm.traceplot(trace[:])
 
@@ -399,8 +445,10 @@ def prop_test(pi_0, l_0, pi_1, l_1, empirical_threshold=5, alternative="greater"
         while count_1 < empirical_threshold:
             count_1 = int(pi_1 * l_1 * 10)
             total_1 *= 10
-        _, pval = fisher_exact(np.array([[count_0, count_1], [total_0 - count_0, total_1 - count_1]]),
-                               alternative=alternative)
+        _, pval = fisher_exact(
+            np.array([[count_0, count_1], [total_0 - count_0, total_1 - count_1]]),
+            alternative=alternative,
+        )
     except Exception as e:
         print(e, count_0, total_0, count_1, total_1)
         pval = 1
@@ -418,9 +466,11 @@ def poisson_test(observed_lambda, background_lambda):
         background_lambda *= background_scale
     observed_total = int(10000 * observed_scale)
     background_total = int(background_scale * 10000)
-    return binom_test((int(observed_lambda), int(background_lambda)),
-                      observed_total / (observed_total + background_total),
-                      alternative="less")
+    return binom_test(
+        (int(observed_lambda), int(background_lambda)),
+        observed_total / (observed_total + background_total),
+        alternative="less",
+    )
 
 
 def get_outlier_threshold(data, direction=-1):
@@ -475,7 +525,14 @@ def pval_dist(pval_list, logger, output_diagnostic_plot=True, output_to=None):
             logger.error("Cannot get enough p-values for binning")
             return
         import matplotlib.pyplot as plt
-        plt.hist(pval_list_filtered, bins=20, range=(0, 1), density=True, color="powderblue", )
+
+        plt.hist(
+            pval_list_filtered,
+            bins=20,
+            range=(0, 1),
+            density=True,
+            color="powderblue",
+        )
         plt.xlabel("$p$-value")
         plt.ylabel("Density")
         plt.xlim((0, 1))
@@ -494,6 +551,7 @@ if __name__ == "__main__":
     k = 0.25
 
     # Simulate some data
-    counts = np.array([(np.random.random() > pi) *
-                       np.random.poisson(theta) for i in range(n)])
+    counts = np.array(
+        [(np.random.random() > pi) * np.random.poisson(theta) for i in range(n)]
+    )
     print(zip_em(counts, debug=True, output_to="zip_ll.pdf"))

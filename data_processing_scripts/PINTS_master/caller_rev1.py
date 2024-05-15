@@ -15,12 +15,12 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-import os
-import sys
-import logging
-import warnings
 import argparse
 import gzip
+import logging
+import os
+import sys
+import warnings
 from multiprocessing import Pool
 
 warnings.filterwarnings("error")
@@ -41,23 +41,23 @@ logger = logging.getLogger("PINTS - Caller")
 try:
     import numpy as np
     import pandas as pd
-    import scipy
     import pysam
     import requests
-    from scipy.stats import poisson, binom_test, probplot, uniform, nbinom
-    from scipy.signal import find_peaks, peak_widths
+    import scipy
+    from io_engine import get_coverage, get_coverage_bw, get_read_signal, log_assert
     from pybedtools import BedTool
-    from statsmodels.stats.multitest import multipletests
+    from scipy.signal import find_peaks, peak_widths
+    from scipy.stats import binom_test, nbinom, poisson, probplot, uniform
 
     # from statsmodels.base.model import GenericLikelihoodModel
     from stats_engine import (
+        get_outlier_threshold,
+        pval_dist,
         zip_cdf,
         zip_em,
         zip_moment_estimators,
-        get_outlier_threshold,
-        pval_dist,
     )
-    from io_engine import get_read_signal, get_coverage, get_coverage_bw, log_assert
+    from statsmodels.stats.multitest import multipletests
 except ImportError as e:
     missing_package = str(e).replace("No module named '", "").replace("'", "")
     logger.error("Please install %s first!" % missing_package)
@@ -166,7 +166,7 @@ def run_command(cmd, repress_log=False):
     return_code : int
         Exit status of the child process
     """
-    from subprocess import Popen, PIPE
+    from subprocess import PIPE, Popen
 
     p = Popen(cmd, shell=True, stderr=PIPE, stdout=PIPE)
     stdout, stderr = p.communicate()
@@ -433,9 +433,9 @@ def remove_peaks_in_local_env(
         cache_key = "%d-%d" % (b, s)
         if cache_key in cache:
             if cache[cache_key] == 1:
-                new_local_env[
-                    se_r[k][0] + coord_offset : se_r[k][1] + coord_offset
-                ] = -1
+                new_local_env[se_r[k][0] + coord_offset : se_r[k][1] + coord_offset] = (
+                    -1
+                )
                 ler_count += 1
         else:
             uncertain_re_r.append(re_r[k])
@@ -1214,9 +1214,11 @@ def peaks_single_strand(
     logger.info("Lambda for small peaks: %f" % lamb_global)
     inflated_small_peaks = np.sum(small_peaks_probe)
     tmp_df["pval"] = tmp_df.apply(
-        lambda x: x["pval"]
-        if x["end"] - x["start"] > kwargs["small_peak_threshold"]
-        else poisson.sf(x["reads"], lamb_global * (x["end"] - x["start"])),
+        lambda x: (
+            x["pval"]
+            if x["end"] - x["start"] > kwargs["small_peak_threshold"]
+            else poisson.sf(x["reads"], lamb_global * (x["end"] - x["start"]))
+        ),
         axis=1,
     )
     corrected_small_peaks = np.sum(

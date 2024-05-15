@@ -15,12 +15,12 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-import os
-import sys
-import logging
-import warnings
 import argparse
 import gzip
+import logging
+import os
+import sys
+import warnings
 from multiprocessing import Pool
 
 warnings.filterwarnings("error")
@@ -39,16 +39,23 @@ logger = logging.getLogger("PINTS - Caller")
 try:
     import numpy as np
     import pandas as pd
-    import scipy
     import pysam
     import requests
-    from scipy.stats import poisson, binom_test, probplot, uniform, nbinom
-    from scipy.signal import find_peaks, peak_widths
+    import scipy
+    from io_engine import get_coverage, get_coverage_bw, get_read_signal, log_assert
     from pybedtools import BedTool
-    from statsmodels.stats.multitest import multipletests
+    from scipy.signal import find_peaks, peak_widths
+    from scipy.stats import binom_test, nbinom, poisson, probplot, uniform
+
     # from statsmodels.base.model import GenericLikelihoodModel
-    from stats_engine import zip_cdf, zip_em, zip_moment_estimators, get_outlier_threshold, pval_dist
-    from io_engine import get_read_signal, get_coverage, get_coverage_bw, log_assert
+    from stats_engine import (
+        get_outlier_threshold,
+        pval_dist,
+        zip_cdf,
+        zip_em,
+        zip_moment_estimators,
+    )
+    from statsmodels.stats.multitest import multipletests
 except ImportError as e:
     missing_package = str(e).replace("No module named '", "").replace("'", "")
     logger.error("Please install %s first!" % missing_package)
@@ -136,9 +143,9 @@ def run_command(cmd, repress_log=False):
     return_code : int
         Exit status of the child process
     """
-    from subprocess import Popen, PIPE
+    from subprocess import PIPE, Popen
     p = Popen(cmd, shell=True, stderr=PIPE, stdout=PIPE)
-    stdout, stderr = p.communicate()
+    stdout, stderr = p.communicate(timeout=5)
     stderr = stderr.decode("utf-8")
     stdout = stdout.decode("utf-8")
     if not repress_log:
@@ -489,7 +496,7 @@ def check_window(coord_start, coord_end, mu_peak, pi_peak, chromosome_coverage, 
     mus = []
     pis = []
     ler_counts = []
-    cache = dict()
+    # cache = dict()
     for k, f in enumerate(flanking):
         # cache = dict()
         qsl = coord_start - f
@@ -523,7 +530,7 @@ def check_window(coord_start, coord_end, mu_peak, pi_peak, chromosome_coverage, 
 
 
 def cut_peaks(window, peak_height, peak_threshold, peak_distance, peak_prominence, peak_width, peak_wlen,
-              peak_rel_height, donor_tolerance, receptor_tolerance, ce_trigger, max_distance=20):
+              peak_rel_height, donor_tolerance, receptor_tolerance, ce_trigger):
     """
     Cut peaks from the given window
 
@@ -575,15 +582,13 @@ def cut_peaks(window, peak_height, peak_threshold, peak_distance, peak_prominenc
         candidates.append((m[0], m[1], events, events / (m[1] - m[0])))
     fwd_search = []
     rev_search = []
-
     # forward search
     for k, c in enumerate(candidates):
         if k < len(candidates) - 1:
             new_total = c[2] + candidates[k + 1][2]
             new_density = new_total / (candidates[k + 1][1] - c[0])
             if new_density >= donor_tolerance * c[3]:
-                distance_check = c[1] - c[0] < ce_trigger or candidates[k+1][0] - c[1] > max_distance
-                if distance_check and new_density < (receptor_tolerance * candidates[k + 1][3]):
+                if c[1] - c[0] < ce_trigger and new_density < (receptor_tolerance * candidates[k + 1][3]):
                     continue
                 merged = (c[0], candidates[k + 1][1], new_total, new_density)
                 fwd_search.append(merged)
@@ -598,8 +603,7 @@ def cut_peaks(window, peak_height, peak_threshold, peak_distance, peak_prominenc
             new_total = c[2] + candidates[k - 1][2]
             new_density = new_total / (c[1] - candidates[k - 1][0])
             if new_density >= donor_tolerance * c[3]:
-                distance_check = c[1] - c[0] < ce_trigger or c[0] - candidates[k-1][1] > max_distance
-                if distance_check and new_density < (receptor_tolerance * candidates[k - 1][3]):
+                if c[1] - c[0] < ce_trigger and new_density < (receptor_tolerance * candidates[k - 1][3]):
                     continue
                 merged = (candidates[k - 1][0], c[1], new_total, new_density)
                 rev_search.append(merged)
@@ -1293,7 +1297,7 @@ if __name__ == "__main__":
                        required=False, default=False,
                        help="Set this switch if reads in this library represent the reverse complement of nascent "
                             "RNAs, like PROseq")
-    group.add_argument('-f', '--filters', action='store', type=str, nargs="*", default=[],
+    group.add_argument('-f', '--filters', action='store', type=str, nargs="*",
                        help="reads from chromosomes whose names contain any matches in filters will be ignored")
 
     group = parser.add_argument_group("Filtering")
