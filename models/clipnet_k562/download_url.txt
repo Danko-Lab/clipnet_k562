@@ -1,4 +1,4 @@
 CLIPNET_K562 consists of 9 model folds which are too large to reasonably package
 into a GitHub repo. They can be downloaded from the following Zenodo link:
 
-###### https://zenodo.org/doi/10.5281/zenodo.10408622 # REPLACE WITH CLIPNET_K562
+https://zenodo.org/doi/10.5281/zenodo.11196189
