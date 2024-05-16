@@ -1,2 +1,2 @@
-# CLIPNET k562
+# CLIPNET K562
 Transfer learning of CLIPNET (trained in LCLs) to K562
