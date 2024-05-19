@@ -4,10 +4,10 @@ import os
 # Define master rule (forces Snakemake to generate all missing files)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
-WORKDIR = "/workdir/ayh8/k562/"
-RAWDIR = "/fs/cbsubscb17/storage/data/hg38/k562/procap/"
-fold_assignments = "../../clipnet_data_folds/data_fold_assignments.csv"
+DATADIR = "../../data/"
+WORKDIR = "../../data/tmp/"
+RAWDIR = "../../data/raw/"
+fold_assignments = "../data_fold_assignments.csv"
 FOLDS = 10
 
 output = [
@@ -92,7 +92,7 @@ rule bedgraph_to_bigwig:
     input:
         os.path.join(WORKDIR, "k562_procap_{pm}.rpm.bedGraph"),
     params:
-        chromsizes="/fs/cbsubscb17/storage/data/hg38/hg38.chrom.sizes",
+        chromsizes=os.path.join(RAWDIR, "hg38.withrDNA.chrom.sizes"),
     output:
         os.path.join(WORKDIR, "k562_procap_{pm}.rpm.bigWig"),
     shell:

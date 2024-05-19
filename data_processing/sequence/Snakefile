@@ -4,10 +4,10 @@ import os
 # Define master rule (forces Snakemake to generate all missing files)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
-WORKDIR = "/workdir/ayh8/k562/"
-RAWDIR = "/fs/cbsubscb17/storage/data/hg38/k562/groseq_tss/"
-fold_assignments = "../../clipnet_data_folds/data_fold_assignments.csv"
+DATADIR = "../../data/"
+WORKDIR = "../../data/tmp/"
+RAWDIR = "../../data/raw/"
+fold_assignments = "../data_fold_assignments.csv"
 FOLDS = 10
 
 output = [
@@ -15,7 +15,7 @@ output = [
     for fold in range(FOLDS)
 ]
 output_fa = [
-    os.path.join(DATADIR, f"k562_data_folds/k562_sequence_{fold}.fna.gz")
+    os.path.join(DATADIR, f"k562_data_folds/k562_sequence_{fold}.fa.gz")
     for fold in range(FOLDS)
 ]
 
@@ -44,47 +44,37 @@ rule unpack_windows:
         "gunzip -c {input} > {output}"
 
 
-# format bed coordinates to seqList format
-rule make_seqList:
-    input:
-        os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.bed"),
-    output:
-        os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.seqList"),
-    shell:
-        "bash ../../data_processing_scripts/make_seqList.sh {input} > {output}"
-
-
 # use seqList to filter 2bit file to fna file.
 rule get_window_sequences:
     input:
-        twoBit="/fs/cbsubscb17/storage/data/hg38/hg38.2bit",
-        seqList=os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.seqList"),
+        fa=os.path.join(RAWDIR, "hg38.withrDNA.fa"),
+        bed=os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.bed"),
     params:
-        os.path.join(WORKDIR, "sequence/k562_sequence.fna"),
+        os.path.join(WORKDIR, "sequence/k562_sequence.fa"),
     output:
-        os.path.join(WORKDIR, "sequence/k562_sequence.fna.gz"),
+        os.path.join(WORKDIR, "sequence/k562_sequence.fa.gz"),
     shell:
         """
-        twoBitToFa {input.twoBit} -seqList={input.seqList} {params}
+        bedtools -seqList={input.seqList} {params}
         bgzip {params}
         """
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Split sequence files into train, validation and test
+# Split sequence files into data folds
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 rule split_sequence:
     input:
-        fna=os.path.join(WORKDIR, "sequence/k562_sequence.fna.gz"),
+        fna=os.path.join(WORKDIR, "sequence/k562_sequence.fa.gz"),
     resources:
         load=1,
     params:
         fold_assignments=fold_assignments,
         fold="{fold}",
     output:
-        fna=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fna.gz"),
+        fna=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fa.gz"),
     run:
         from Bio import SeqIO, bgzf
         import gzip
@@ -98,27 +88,27 @@ rule split_sequence:
         )
 
         recs = []
-        with gzip.open(input.fna, "rt") as f:
+        with gzip.open(input.fa, "rt") as f:
             for rec in SeqIO.parse(f, "fasta"):
                 chrom = rec.id.split(":")[0].split("_")[-1]
                 if chrom in chroms:
                     recs.append(rec)
 
-        with bgzf.BgzfWriter(output.fna, "wb") as out:
+        with bgzf.BgzfWriter(output.fa, "wb") as out:
             SeqIO.write(recs, out, "fasta")
 
 
 rule numpify_fasta:
     input:
-        fna=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fna.gz"),
+        fna=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fa.gz"),
     output:
         npz=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.npz"),
     run:
         import numpy as np
         import sys
 
-        sys.path.append("../../clipnet/")
+        sys.path.append("../../model_training/")
         import utils
 
-        seq_array = utils.get_onehot_fasta_sequences(input.fna, cores=1)
+        seq_array = utils.get_twohot_fasta_sequences(input.fa, cores=1)
         np.savez_compressed(output.npz, seq_array)
