@@ -1,3 +1,4 @@
 #!/bin/bash
 
-snakemake --dryrun --printshellcmds --jobs 20 --resources load=100
+echo snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
+snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
