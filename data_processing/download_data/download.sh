@@ -7,7 +7,7 @@ mkdir -p $outdir
 # Download reference genome
 
 echo "Downloading reference genome (hg38) ..."
-wget https://www.encodeproject.org/files/GRCh38_no_alt_analysis_set_GCA_000001405.15/@@download/GRCh38_no_alt_analysis_set_GCA_000001405.15.fa.gz \
+wget https://www.encodeproject.org/files/GRCh38_no_alt_analysis_set_GCA_000001405.15/@@download/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz \
     -O ${outdir}/hg38.fa.gz
 gunzip ${outdir}/hg38.fa.gz
 
@@ -39,10 +39,10 @@ echo "U13369.1	$rDNA_length" >> "$outdir/hg38.withrDNA.chrom.sizes"
 echo "Downloading PRO-cap data ..."
 # pl strand
 wget -O $outdir/ENCFF994CSC.bigWig https://www.encodeproject.org/files/ENCFF994CSC/@@download/ENCFF994CSC.bigWig
-wget -O $outdir/ENCFF580QEK.bigWig https://www.encodeproject.org/files/ENCFF994CSC/@@download/ENCFF580QEK.bigWig
+wget -O $outdir/ENCFF580QEK.bigWig https://www.encodeproject.org/files/ENCFF580QEK/@@download/ENCFF580QEK.bigWig
 # mn strand
-wget -O $outdir/ENCFF253HUA.bigWig https://www.encodeproject.org/files/ENCFF994CSC/@@download/ENCFF253HUA.bigWig
-wget -O $outdir/ENCFF328OOU.bigWig https://www.encodeproject.org/files/ENCFF994CSC/@@download/ENCFF328OOU.bigWig
+wget -O $outdir/ENCFF253HUA.bigWig https://www.encodeproject.org/files/ENCFF253HUA/@@download/ENCFF253HUA.bigWig
+wget -O $outdir/ENCFF328OOU.bigWig https://www.encodeproject.org/files/ENCFF328OOU/@@download/ENCFF328OOU.bigWig
 
 # Done
 
