@@ -9,7 +9,7 @@ DATADIR = "../../data/coords/"
 WORKDIR = "../../data/tmp/"
 RAWDIR = "../../data/raw/"
 
-peaks = (os.path.join(DATADIR, "coords/merged_pairedPeak_autosomes.bed.gz"),)
+peaks = os.path.join(DATADIR, "coords/k562_procap_pairedPeak_autosomes.bed.gz")
 windows = os.path.join(DATADIR, "coords/k562_procap_tss_1kb_windows.bed.gz")
 
 
