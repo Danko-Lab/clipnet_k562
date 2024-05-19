@@ -62,7 +62,7 @@ rule get_window_sequences:
 
 rule split_sequence:
     input:
-        fna=os.path.join(WORKDIR, "sequence/k562_sequence.fa"),
+        fa=os.path.join(WORKDIR, "sequence/k562_sequence.fa"),
     resources:
         load=1,
     params:
@@ -94,7 +94,7 @@ rule split_sequence:
 
 rule numpify_fasta:
     input:
-        fna=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fa.gz"),
+        fa=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fa.gz"),
     output:
         npz=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.npz"),
     run:
