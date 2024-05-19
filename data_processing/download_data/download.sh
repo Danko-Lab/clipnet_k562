@@ -14,7 +14,6 @@ gunzip ${outdir}/hg38.fa.gz
 # Download rDNA reference sequence
 
 rDNA_fa=${outdir}/rDNA_human_U13369.1.fa
-
 wget https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi\?tool\=portal\&save\=file\&log$\=seqview\&db\=nuccore\&report\=fasta\&id\=555853\&conwithfeat\=on\&withparts\=on\&hide-cdd\=on -O - | \
     sed '$ d' > $rDNA_fa
 
@@ -32,7 +31,7 @@ wget https://www.encodeproject.org/files/GRCh38_EBV.chrom.sizes/@@download/GRCh3
 
 cp "$outdir/hg38.chrom.sizes" "$outdir/hg38.withrDNA.chrom.sizes"
 rDNA_length=`grep -v ">" "$rDNA_fa" | tr -d '\n' | wc -c`
-echo "U13369.1	$rDNA_length" >> "$outdir/hg38.withrDNA.chrom.sizes"
+echo -e "U13369.1\t$rDNA_length" >> "$outdir/hg38.withrDNA.chrom.sizes"
 
 # Download PRO-cap data
 

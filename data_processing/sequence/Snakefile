@@ -49,15 +49,10 @@ rule get_window_sequences:
     input:
         fa=os.path.join(RAWDIR, "hg38.withrDNA.fa"),
         bed=os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.bed"),
-    params:
-        os.path.join(WORKDIR, "sequence/k562_sequence.fa"),
     output:
-        os.path.join(WORKDIR, "sequence/k562_sequence.fa.gz"),
+        os.path.join(WORKDIR, "sequence/k562_sequence.fa"),
     shell:
-        """
-        bedtools -seqList={input.seqList} {params}
-        bgzip {params}
-        """
+        "bedtools getfasta -fi {input.fa} -bed {input.bed} -fo {output}"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,17 +62,16 @@ rule get_window_sequences:
 
 rule split_sequence:
     input:
-        fna=os.path.join(WORKDIR, "sequence/k562_sequence.fa.gz"),
+        fna=os.path.join(WORKDIR, "sequence/k562_sequence.fa"),
     resources:
         load=1,
     params:
         fold_assignments=fold_assignments,
         fold="{fold}",
     output:
-        fna=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fa.gz"),
+        fa=os.path.join(DATADIR, "k562_data_folds/k562_sequence_{fold}.fa.gz"),
     run:
         from Bio import SeqIO, bgzf
-        import gzip
         import pandas as pd
 
         fold_assignments = pd.read_csv(
@@ -88,7 +82,7 @@ rule split_sequence:
         )
 
         recs = []
-        with gzip.open(input.fa, "rt") as f:
+        with open(input.fa, "rt") as f:
             for rec in SeqIO.parse(f, "fasta"):
                 chrom = rec.id.split(":")[0].split("_")[-1]
                 if chrom in chroms:
