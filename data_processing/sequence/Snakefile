@@ -100,6 +100,7 @@ rule numpify_fasta:
     run:
         import numpy as np
         import sys
+        import pyfastx
 
         sys.path.append("../../model_training/")
         import utils
