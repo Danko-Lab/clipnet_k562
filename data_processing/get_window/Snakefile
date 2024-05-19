@@ -92,11 +92,11 @@ rule run_PINTS:
         mn=os.path.join(WORKDIR, "k562_procap_mn.bigWig"),
     params:
         output_dir=os.path.join(WORKDIR, "peaks"),
-        output_prefix="merged",
+        output_prefix="k562",
     resources:
         load=5,
     output:
-        os.path.join(WORKDIR, "peaks/merged_narrowPeak.bed"),
+        os.path.join(WORKDIR, "peaks/k562_procap_narrowPeak.bed"),
     shell:
         """
         python ../../data_processing_scripts/PINTS_master/caller_rev2.py bigwig \
@@ -111,10 +111,10 @@ rule run_PINTS:
 
 rule split_plmn:
     input:
-        os.path.join(WORKDIR, "peaks/merged_narrowPeak.bed"),
+        os.path.join(WORKDIR, "peaks/k562_procap_narrowPeak.bed"),
     output:
-        pl=os.path.join(WORKDIR, "peaks/merged_narrowPeak_pl.bed"),
-        mn=os.path.join(WORKDIR, "peaks/merged_narrowPeak_mn.bed"),
+        pl=os.path.join(WORKDIR, "peaks/k562_procap_narrowPeak_pl.bed"),
+        mn=os.path.join(WORKDIR, "peaks/k562_procap_narrowPeak_mn.bed"),
     shell:
         """
         awk '{{if($6=="+") print $0}}' {input} > {output.pl}
@@ -124,10 +124,10 @@ rule split_plmn:
 
 rule get_divergent_pairs:
     input:
-        pl=os.path.join(WORKDIR, "peaks/merged_narrowPeak_pl.bed"),
-        mn=os.path.join(WORKDIR, "peaks/merged_narrowPeak_mn.bed"),
+        pl=os.path.join(WORKDIR, "peaks/k562_procap_narrowPeak_pl.bed"),
+        mn=os.path.join(WORKDIR, "peaks/k562_procap_narrowPeak_mn.bed"),
     output:
-        os.path.join(WORKDIR, "peaks/merged_pairedPeak.bed"),
+        os.path.join(WORKDIR, "peaks/k562_procap_pairedPeak.bed"),
     shell:
         "python ../../data_processing_scripts/get_divergent_pairs.py {input} > {output}"
 
@@ -139,7 +139,7 @@ rule get_divergent_pairs:
 
 rule only_autosomes:
     input:
-        os.path.join(WORKDIR, "peaks/merged_pairedPeak.bed"),
+        os.path.join(WORKDIR, "peaks/k562_procap_pairedPeak.bed"),
     output:
         peaks,
     shell:
