@@ -189,7 +189,7 @@ def main():
     else:
         with open(f"{args.reporter_prefix}_shuffle{args.dinuc_shuffles}.fa", "w") as f:
             for i, row in tqdm.tqdm(
-                oligos.iterrows, desc="Writing reporters", total=oligos.shape[0]
+                list(oligos.iterrows()), desc="Writing reporters", total=oligos.shape[0]
             ):
                 shuffle = kshuffle(
                     row["Allele 1 Oligo"],
