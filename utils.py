@@ -138,10 +138,11 @@ def get_twohot_fasta_sequences(
     Given a fasta file with each record, returns an twohot-encoded array (n, len, 4)
     array of all sequences.
     """
+    fa = pyfaidx.Fasta(fasta_fp)
     seqs = [
         rec[:].seq
         for rec in tqdm.tqdm(
-            pyfaidx.Fasta(fasta_fp), desc="Reading sequences", disable=silence
+            fa, desc="Reading sequences", disable=silence, total=len(fa)
         )
     ]
     if cores > 1:
