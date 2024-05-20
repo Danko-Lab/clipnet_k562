@@ -9,6 +9,9 @@ ref = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.h5")["qua
 alt = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.h5")["quantity"][
     :, 0
 ]
+random = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_shuffle1.h5")[
+    "quantity"
+][:, 0].mean()
 
 mpra = pd.read_csv("media-4-K562_allelic_mpra.tsv.gz", sep="\t")
 snps = pd.read_csv("media-3_oligos_snps.tsv.gz", sep="\t")
