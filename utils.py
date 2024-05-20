@@ -7,7 +7,7 @@ import os
 import re
 
 import numpy as np
-import pyfastx
+import pyfaidx
 import tqdm
 
 
@@ -141,7 +141,7 @@ def get_twohot_fasta_sequences(
     seqs = [
         rec.seq
         for rec in tqdm.tqdm(
-            pyfastx.Fasta(fasta_fp), desc="Reading sequences", disable=silence
+            pyfaidx.Fasta(fasta_fp), desc="Reading sequences", disable=silence
         )
     ]
     if cores > 1:
@@ -159,29 +159,6 @@ def get_twohot_fasta_sequences(
             TwoHotDNA(seq).twohot for seq in tqdm.tqdm(seqs, desc=desc, disable=silence)
         ]
     return np.array(twohot_encoded)
-
-
-def get_consensus_region(bed_intervals, consensus_fp):
-    """
-    Given a list of bed intervals and a consensus.fna file path, get list of sequences
-    as strings.
-    """
-    sequences = []
-    fna = pyfastx.Fasta(consensus_fp)
-    for interval in bed_intervals:
-        # Recall that pyfastx uses 1 based [) half open encoding.
-        sequences.append(fna.fetch(interval.chrom, (interval.start + 1, interval.stop)))
-    return sequences
-
-
-def get_consensus_twohot(bed_intervals, consensus_fp):
-    """
-    Given a list of bed intervals and a consensus.fna file path, return a list of
-    twohot encodings.
-    """
-    sequences = get_consensus_region(bed_intervals, consensus_fp)
-    twohot_list = [TwoHotDNA(sequence).twohot for sequence in sequences]
-    return twohot_list
 
 
 def rc_twohot_het(arr):
