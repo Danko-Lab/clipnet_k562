@@ -23,3 +23,4 @@ data["pred"] = np.log2(data["ref"] / data["alt"])
 data.dropna(inplace=True)
 
 pearsonr(data["expt"], data["pred"])
+# PearsonRResult(statistic=0.24444150001598372, pvalue=0.0)
