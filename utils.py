@@ -139,7 +139,7 @@ def get_twohot_fasta_sequences(
     array of all sequences.
     """
     seqs = [
-        rec.seq
+        rec[:].seq
         for rec in tqdm.tqdm(
             pyfaidx.Fasta(fasta_fp), desc="Reading sequences", disable=silence
         )
