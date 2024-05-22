@@ -17,6 +17,7 @@ Run `create_reporter_constructs.py`. This script will generate the reporter cons
 ```bash
 python create_reporter_constructs.py media-3_oligos_snps.tsv.gz ../data/mpra/k562_mpra_snps
 python create_reporter_constructs.py media-3_oligos_snps.tsv.gz ../data/mpra/k562_mpra_snps --dinuc_shuffles 1
+python create_reporter_constructs.py media-3_oligos_snps.tsv.gz ../data/mpra/k562_mpra_snps_2114 --procapnet
 ```
 
 ## Now predict on these sequences
