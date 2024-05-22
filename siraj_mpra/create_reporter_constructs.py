@@ -123,8 +123,9 @@ def kshuffle(seq, num_shufs=1, k=2, random_seed=None):
     return all_results
 
 
-def construct_reporter_seq(enhancer_seq):
+def construct_reporter_seq(enhancer_seq, procapnet=False):
     vector_seqs = {
+        "procapnet": "AGCGAAGAAGTGGTCCTGCTACTTTGTCCGCCTCCATCCAGTCTATGAGCTGCTGTCGTGATGCTAGAGTAAGAAGTTCGCCAGTGAGTAGTTTCCGAAGAGTTGTGGCCATTGCTACTGGCATCGTGGTATCACGCTCGTCGTTCGGTATGGCTTCGTTCAACTCTGGTTCCCAGCGGTCAAGCCGGGTCACATGATCACCCATATTATGAAGAAATGCAGTCAGCTCCTTAGGGCCTCCGATCGTTGTCAGAAGTAAGTTGGCCGCGGTGTTGTCGCTCATGGTAATGGCAGCACTACACAATTCTCTTACCGTCATGCCATCCGTAAGATGCTTTTCCGTGACCGGCGAGTACTCAACCAAGTCGTTTTGTGAGTAGTGTATACGGCGACCAAGCTGCTCTTGCCCGGCGTCTATACGGGACAACACCGCGCCACATAGCAGTACTTTGAAAGTGCTCATCATCGGGAATCGTTCTTCGGGGCGGAAAGACTCAAGGATCTTGCCGCTATTGAGATCCAGTTCGATATAGCCCACTCTTGCACCCAGTTGATCTTCAGCATCTTTTACTTTCACCAGCGTTTCGGGGTGTGCAA",
         "Sfi1_5prime": "AAACAGGCAAGCAAAATGCCGCAAAGAAGGGAATGAGTGCGACACGAAAATGTTGGATGCTCATACTCGTCCTTTTTCAATATTATTGAAGCATTTATCAGGGTTACTAGTACGTCTCTCAAGGATAAGTAAGTAATATTAAGGTACGGGAGGTATTGGACAGGCCGCAATAAAATATCTTTATTTTCATTACATCTGTGTGTTGGTTTTTTGTGTGAATCGATAGTACTAACATACGCTCTCCATCAAAACAAAACGAAACAAAACAAACTAGCAAAATAGGCTGTCCCCAGTGCAAGTGCAGGTGCCAGAACATTTCTCTGGCCTAAC",
         "reporter_minP_spacer": "",
         "minP_GFP": "tcaatctaaagtatatatgagtaaacttggtctgacagcggccgcaaatgctaaaccactgcagtggttaccagtgcttgatcagtgaggcaccgatctcagcgatctgcctatttcgttcgtccatagtggcctgactccccgtcgtgtagatcactacgattcgtgagggcttaccatcaggccccagcgcagcaatgatgccgcgagagccgcgttcaccggcccccgatttgtcagcaatgaaccagccagcagggagggccgagcgaagaagtggtcctgctactttgtccgcctccatccagtctatgagctgctgtcgtgatgctagagtaagaagttcgccagtgagtagtttccgaagagttgtggccattgctactggcatcgtggtatcacgctcgtcgttcggtatggcttcgttcaactctggttcccagcggtcaagccgggtcacatgatcacccatattatgaagaaatgcagtcagctccttagggcctccgatcgttgtcagaagtaagttggccgcggtgttgtcgctcatggtaatggcagcactacacaattctcttaccgtcatgccatccgtaagatgcttttccgtgaccggcgagtactcaaccaagtcgttttgtgagtagtgtatacggcgaccaagctgctcttgcccggcgtctatacgggacaacaccgcgccacatagcagtactttgaaagtgctcatcatcgggaatcgttcttcggggcggaaagactcaaggatcttgccgctattgagatccagttcgatatagcccactcttgcacccagttgatcttcagcatcttttactttcaccagcgtttcggggtgtgcaaaaacaggcaagcaaaatgccgcaaagaagggaatgagtgcgacacgaaaatgttggatgctcatactcgtcctttttcaatattattgaagcatttatcagggttactagtacgtctctcaag",
@@ -138,6 +139,15 @@ def construct_reporter_seq(enhancer_seq):
             vector_seqs["minP_GFP"],
         ]
     )
+    # Add procapnet sequence if needed
+    if procapnet:
+        construct = "".join(
+            [
+                vector_seqs["procapnet"],
+                construct,
+            ]
+        )
+        return construct
     # Trim off excess 3' sequence and return encoded sequence
     return construct[:1000]
 
@@ -170,6 +180,11 @@ def main():
         default=47,
         help="Random seed for reproducibility (only used if dinuc_shuffles > 0)",
     )
+    parser.add_argument(
+        "--procapnet",
+        action="store_true",
+        help="Generates reporter constructs for ProCapNet predictions. len = 2114.",
+    )
     args = parser.parse_args()
     # Read in oligo sequences
     oligos = pd.read_csv(args.oligo_tsv, sep="\t")
@@ -181,8 +196,12 @@ def main():
             for i, row in tqdm.tqdm(
                 list(oligos.iterrows()), desc="Writing reporters", total=oligos.shape[0]
             ):
-                ref_construct = construct_reporter_seq(row["Allele 1 Oligo"])
-                alt_construct = construct_reporter_seq(row["Allele 2 Oligo"])
+                ref_construct = construct_reporter_seq(
+                    row["Allele 1 Oligo"], procapnet=args.procapnet
+                )
+                alt_construct = construct_reporter_seq(
+                    row["Allele 2 Oligo"], procapnet=args.procapnet
+                )
                 name = f"{row['Variant']}_{row['chrom']}_{row['pos']}"
                 ref.write(f">{name}_{row['a1']}\n{ref_construct}\n")
                 alt.write(f">{name}_{row['a2']}\n{alt_construct}\n")
@@ -197,7 +216,7 @@ def main():
                     random_seed=args.seed,
                 )
                 for i, s in enumerate(shuffle):
-                    construct = construct_reporter_seq(s)
+                    construct = construct_reporter_seq(s, procapnet=args.procapnet)
                     f.write(f">{row['Variant']}_shuffle{i}\n{construct}\n")
 
 
