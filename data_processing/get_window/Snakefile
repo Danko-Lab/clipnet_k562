@@ -9,11 +9,9 @@ DATADIR = "../../data/coords/"
 WORKDIR = "../../data/tmp/"
 RAWDIR = "../../data/raw/"
 
-peaks = os.path.join(DATADIR, "coords/k562_procap_pairedPeak_autosomes.bed.gz")
-windows = os.path.join(DATADIR, "coords/k562_procap_tss_1kb_windows.bed.gz")
-centered_windows = os.path.join(
-    DATADIR, "coords/k562_procap_tss_1kb_centered_windows.bed.gz"
-)
+peaks = os.path.join(DATADIR, "k562_procap_pairedPeak_autosomes.bed.gz")
+windows = os.path.join(DATADIR, "k562_procap_tss_1kb_windows.bed.gz")
+centered_windows = os.path.join(DATADIR, "k562_procap_tss_1kb_centered_windows.bed.gz")
 
 
 rule all:  # A master rule that ensures all the other rules run
