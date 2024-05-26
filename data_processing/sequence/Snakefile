@@ -18,12 +18,14 @@ output_fa = [
     os.path.join(DATADIR, f"k562_data_folds/k562_sequence_{fold}.fa.gz")
     for fold in range(FOLDS)
 ]
+centered_fa = os.path.join(DATADIR, "k562_data_folds/k562_sequence_centered.fa.gz")
 
 
 rule sequence_all:  # A master rule that ensures all the other rules run
     input:
         output,
         output_fa,
+        centered_fa,
     params:
         WORKDIR,
     shell:
@@ -37,14 +39,18 @@ rule sequence_all:  # A master rule that ensures all the other rules run
 
 rule unpack_windows:
     input:
-        os.path.join(DATADIR, "coords/procap_tss_1kb_windows.bed.gz"),
+        shuf=os.path.join(DATADIR, "coords/procap_tss_1kb_windows.bed.gz"),
+        cent=os.path.join(DATADIR, "k562_procap_tss_1kb_centered_windows.bed.gz"),
     output:
-        os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.bed"),
+        shuf=os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.bed"),
+        cent=os.path.join(WORKDIR, "k562_procap_tss_1kb_centered_windows.bed"),
     shell:
-        "gunzip -c {input} > {output}"
+        """
+        gunzip -c {input.shuf} > {output.shuf}
+        gunzip -c {input.cent} > {output.cent}
+        """
 
 
-# use seqList to filter 2bit file to fna file.
 rule get_window_sequences:
     input:
         fa=os.path.join(RAWDIR, "hg38.withrDNA.fa"),
@@ -53,6 +59,16 @@ rule get_window_sequences:
         os.path.join(WORKDIR, "sequence/k562_sequence.fa"),
     shell:
         "bedtools getfasta -fi {input.fa} -bed {input.bed} -fo {output}"
+
+
+rule get_centered_window_sequences:
+    input:
+        fa=os.path.join(RAWDIR, "hg38.withrDNA.fa"),
+        bed=os.path.join(WORKDIR, "k562_procap_tss_1kb_centered_windows.bed"),
+    output:
+        centered_fa,
+    shell:
+        "bedtools getfasta -fi {input.fa} -bed {input.bed} | bgzip -c > {output}"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
