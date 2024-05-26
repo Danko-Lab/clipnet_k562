@@ -11,6 +11,9 @@ RAWDIR = "../../data/raw/"
 
 peaks = os.path.join(DATADIR, "coords/k562_procap_pairedPeak_autosomes.bed.gz")
 windows = os.path.join(DATADIR, "coords/k562_procap_tss_1kb_windows.bed.gz")
+centered_windows = os.path.join(
+    DATADIR, "coords/k562_procap_tss_1kb_centered_windows.bed.gz"
+)
 
 
 rule all:  # A master rule that ensures all the other rules run
@@ -161,6 +164,26 @@ rule get_window:
         load=1,
     output:
         windows,
+    shell:
+        """
+        python ../../data_processing_scripts/sample_windows.py \
+            {input} --buffer {params.buffer} --seed {params.seed} | \
+            sort | uniq | gzip > {output}
+        """
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get window coordinates
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule centered_windows:
+    input:
+        peaks,
+    params:
+        buffer=0,
+    output:
+        centered_windows,
     shell:
         """
         python ../../data_processing_scripts/sample_windows.py \
