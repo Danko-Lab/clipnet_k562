@@ -188,6 +188,5 @@ rule centered_windows:
     shell:
         """
         python ../../data_processing_scripts/sample_windows.py \
-            {input} --buffer {params.buffer} --seed {params.seed} | \
-            sort | uniq | gzip > {output}
+            {input} --buffer {params.buffer} | sort | uniq | gzip > {output}
         """
