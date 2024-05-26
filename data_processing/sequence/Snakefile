@@ -40,10 +40,10 @@ rule sequence_all:  # A master rule that ensures all the other rules run
 rule unpack_windows:
     input:
         shuf=os.path.join(DATADIR, "coords/procap_tss_1kb_windows.bed.gz"),
-        cent=os.path.join(DATADIR, "k562_procap_tss_1kb_centered_windows.bed.gz"),
+        cent=os.path.join(DATADIR, "coords/k562_procap_tss_1kb_centered_windows.bed.gz"),
     output:
         shuf=os.path.join(WORKDIR, "coords/procap_tss_1kb_windows.bed"),
-        cent=os.path.join(WORKDIR, "k562_procap_tss_1kb_centered_windows.bed"),
+        cent=os.path.join(WORKDIR, "coords/k562_procap_tss_1kb_centered_windows.bed"),
     shell:
         """
         gunzip -c {input.shuf} > {output.shuf}
