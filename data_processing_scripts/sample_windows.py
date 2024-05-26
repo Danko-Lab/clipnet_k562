@@ -37,7 +37,7 @@ args = parser.parse_args()
 
 assert args.window > 0, "Window size needs to be a positive integer."
 assert (
-    0 < args.buffer < args.window / 2
+    0 <= args.buffer < args.window / 2
 ), "Buffer needs to be a positive integer less than window / 2."
 assert args.reps > 0, "reps needs to be a positive integer."
 
