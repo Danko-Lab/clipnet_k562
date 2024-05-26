@@ -64,7 +64,7 @@ rule get_window_sequences:
 rule get_centered_window_sequences:
     input:
         fa=os.path.join(RAWDIR, "hg38.withrDNA.fa"),
-        bed=os.path.join(WORKDIR, "k562_procap_tss_1kb_centered_windows.bed"),
+        bed=os.path.join(WORKDIR, "coords/k562_procap_tss_1kb_centered_windows.bed"),
     output:
         centered_fa,
     shell:
