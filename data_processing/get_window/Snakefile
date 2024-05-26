@@ -20,6 +20,7 @@ rule all:  # A master rule that ensures all the other rules run
     input:
         peaks,
         windows,
+        centered_windows,
     params:
         WORKDIR,
     shell:
