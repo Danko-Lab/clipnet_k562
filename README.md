@@ -25,10 +25,11 @@ Transfer learning of CLIPNET (trained in LCLs) to K562
 conda activate clipnet
 cd /home2/ayh8/clipnet/
 
+mode=profile
 python calculate_deepshap.py \
-    ../clipnet_k562/data/k562_sequence_0.fa.gz \
-    ../clipnet_k562/attributions/k562_deepshap_quantity_0.npz \
-    ../clipnet_k562/attributions/k562_deepshap_quantity_0.npz
+    ../clipnet_k562/data/k562_data_folds/k562_centered.fa.gz \
+    ../clipnet_k562/attributions/k562_deepshap_${mode}.npz \
+    ../clipnet_k562/attributions/k562_seqs_onehot.npz \
     --model_dir ../clipnet_k562/models/clipnet_k562 \
-    --gpu 0 --mode 0
+    --gpu 0 --mode $mode
 ```
