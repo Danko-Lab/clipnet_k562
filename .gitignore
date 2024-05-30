@@ -1,3 +1,11 @@
+*/*.h5
+*/*/*.h5
+*/*.pth
+*/*/*.pth
+*/*.model
+*/*/*.model
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
