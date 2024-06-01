@@ -30,18 +30,45 @@ python predict_ensemble.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.h5 \
     --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
-    --gpu --use_specific_gpu 1
+    --gpu 1
 python predict_ensemble.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.h5 \
     --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
-    --gpu --use_specific_gpu 0
+    --gpu 0
 python predict_ensemble.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_shuffle1.fa.gz \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_shuffle1.h5 \
     --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
-    --gpu --use_specific_gpu 0
+    --gpu 0
 
-cd ../
+for i in {1..9}; do
+    python predict_individual_model.py \
+        ../clipnet_k562/models/clipnet_k562/fold_${i}.h5 \
+        ../clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
+        ../clipnet_k562/data/mpra/k562_mpra_snps_ref_fold_${i}.h5 \
+        --gpu 0;
+done
 
+for i in {1..9}; do
+    python predict_individual_model.py \
+        ../clipnet_k562/models/clipnet_k562/fold_${i}.h5 \
+        ../clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
+        ../clipnet_k562/data/mpra/k562_mpra_snps_alt_fold_${i}.h5 \
+        --gpu 0;
+done
+```
+
+## Predict using ProCapNet
+
+```bash
+conda activate procapnet
+
+cd
+
+python predict_ensemble.py \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.fa.gz \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.h5 \
+    --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
+    --gpu 0
 ```
