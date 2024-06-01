@@ -3,11 +3,17 @@ import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
 
-ref = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.h5")["quantity"][
-    :, 0
+ref = [
+    h5py.File(f"/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_fold_{i}.h5")[
+        "quantity"
+    ][:, 0]
+    for i in range(1, 10)
 ]
-alt = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.h5")["quantity"][
-    :, 0
+alt = [
+    h5py.File(f"/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt_fold_{i}.h5")[
+        "quantity"
+    ][:, 0]
+    for i in range(1, 10)
 ]
 ref_p = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_procapnet.h5")[
     "quantity"
@@ -18,6 +24,9 @@ alt_p = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt_procapn
 
 mpra = pd.read_csv("media-4-K562_allelic_mpra.tsv.gz", sep="\t")
 snps = pd.read_csv("media-3_oligos_snps.tsv.gz", sep="\t")
+
+holdouts = pd.read_csv("clipnet_data_fold_assignments.csv")
+
 pred = pd.DataFrame(
     {"ref": ref, "alt": alt, "ref_p": ref_p, "alt_p": alt_p, "variant": snps["Variant"]}
 )
