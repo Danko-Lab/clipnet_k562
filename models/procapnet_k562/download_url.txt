@@ -1,4 +1,4 @@
 ProCapNet consists of 6 model folds which are too large to reasonably package
-into a GitHub repo. They can be downloaded from the following Zenodo link:
+into a GitHub repo. They can be downloaded from ENCODE:
 
-###### https://zenodo.org/doi/10.5281/zenodo.10408622 # REPLACE WITH ProCapNet_K562
+https://www.encodeproject.org/files/ENCFF976FHE/@@download/ENCFF976FHE.tar.gz
