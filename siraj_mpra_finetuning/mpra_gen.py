@@ -34,7 +34,7 @@ def load_data(
     ref = pyfastx.Fasta(ref_fp)
     ref_seqs = [x.seq for x in ref]
     ref_chroms = [x.name.split(":")[0] for x in ref]
-    alt = utils.get_twohot_fasta_sequences(alt_fp)
+    alt = pyfastx.Fasta(ref_fp)
     alt_seqs = [x.seq for x in alt]
     mpra = pd.read_csv(mpra_fp, sep="\t")
     y = np.log2(
