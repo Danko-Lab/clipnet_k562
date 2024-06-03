@@ -32,7 +32,7 @@ def load_data(
     print(
         f"Loading sequence data from {ref_fp} and {alt_fp} and MPRA data from {mpra_fp}"
     )
-    mpra = pd.read_csv(mpra_fp, sep="\t")
+    mpra = pd.read_csv(mpra_fp)
     mpra["chrom"] = mpra["variant"].str.split(":", expand=True)[0]
     y = mpra["expt"]
 
@@ -49,12 +49,12 @@ def load_data(
     X = [
         [
             ref_seqs[i]
-            for i in tqdm.trange(len(ref_seqs))
+            for i in tqdm.trange(len(ref_seqs), desc="Extracting reference sequences")
             if var_names[i] in seq_includes
         ],
         [
             alt_seqs[i]
-            for i in tqdm.trange(len(alt_seqs))
+            for i in tqdm.trange(len(alt_seqs), desc="Extracting alternate sequences")
             if var_names[i] in seq_includes
         ],
     ]
