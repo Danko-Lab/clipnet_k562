@@ -95,9 +95,7 @@ checkpoint = tf.keras.callbacks.ModelCheckpoint(
 early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=10)
 tqdm_callback = TqdmCallback(verbose=1, bar_format="{l_bar}{bar:10}{r_bar}{bar:-10b}")
 csv_logger = CSVLogger(
-    filename=outdir.joinpath("mpra_net.log"),
-    separator=",",
-    append=True,
+    filename=outdir.joinpath("mpra_net.log"), separator=",", append=True
 )
 
 # Fit the model
