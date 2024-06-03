@@ -8,9 +8,12 @@ import random
 import numpy as np
 import pandas as pd
 import pyfastx
-import tensorflow as tf
 
 import utils
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
+logging.getLogger("tensorflow").setLevel(logging.FATAL)
+import tensorflow as tf
 
 
 def load_data(
