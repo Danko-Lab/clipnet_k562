@@ -10,7 +10,6 @@ import sys
 
 import numpy as np
 import pandas as pd
-import pyfastx
 import tqdm
 
 sys.path.append("../../clipnet/")
@@ -21,57 +20,23 @@ logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
 
 
-def load_data(
-    ref_fp: str, alt_fp: str, mpra_fp: str, chroms: list, reverse_complement=False
-):
+def load_data(data_fp: str, folds: list, reverse_complement=False):
     """
     Load a single, unfolded dataset. Use reverse_complement=True to load dataset
     reverse complemented.
     """
     # load data and check dimensions
-    print(
-        f"Loading sequence data from {ref_fp} and {alt_fp} and MPRA data from {mpra_fp}"
-    )
-    mpra = pd.read_csv(mpra_fp)
-    mpra["chrom"] = mpra["variant"].str.split(":", expand=True)[0]
-    y = mpra["expt"]
-
-    ref = pyfastx.Fasta(ref_fp)
-    ref_seqs = [x.seq for x in ref]
-    alt = pyfastx.Fasta(alt_fp)
-    alt_seqs = [x.seq for x in alt]
-
-    # Filter data to only include the specified chromosomes
-    include = np.where(np.isin(mpra["chrom"], chroms))[0]
-    var_names = [x.name.split("_")[0] for x in ref]
-    seq_includes = mpra["variant"][include].to_list()
+    print(f"Loading data from {data_fp}.")
+    data = pd.read_csv(data_fp)
+    # Filter data to only include the specified folds
+    data = data[data["fold"].isin(folds)]
     # print(include[0])
-    X = [
-        [
-            ref_seqs[i]
-            for i in tqdm.trange(len(ref_seqs), desc="Extracting reference sequences")
-            if var_names[i] in seq_includes
-        ],
-        [
-            alt_seqs[i]
-            for i in tqdm.trange(len(alt_seqs), desc="Extracting alternate sequences")
-            if var_names[i] in seq_includes
-        ],
-    ]
-    y = mpra["expt"][include]
-
-    # convert to twohot
-    X = [
-        np.array(
-            [
-                utils.get_twohot(seq)
-                for seq in tqdm.tqdm(x, total=len(x), desc="Converting to twohot")
-            ]
-        )
-        for x in X
-    ]
-    print("Successfully loaded data")
-    # do rc_augmentation
+    X = [data["ref_seq"].values, data["alt_seq"].values]
+    X_twohot = [utils.twohot(x) for x in X]
+    y = np.log(
+        (data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562)
+        / (data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562)
+    )
     if reverse_complement:
         X = [utils.rc_twohot_het(x) for x in X]
     # output datasets

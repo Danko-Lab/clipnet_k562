@@ -56,28 +56,3 @@ for i in {1..9}; do
         --gpu 0;
 done
 ```
-
-## Predict using ProCapNet
-
-```bash
-conda activate procapnet
-
-cd ../
-python predict_ensemble_procapnet.py \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.fa.gz \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.h5 \
-    --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
-    --gpu 0
-
-
-```
-
-## Calculate performance metrics
-
-```bash
-python calculate_performance_metrics.py \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.h5 \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_procapnet.npz \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_performance.h5
-
-```
