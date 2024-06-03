@@ -47,7 +47,8 @@ def load_data(
 class MPRAGen(tf.keras.utils.Sequence):
     def __init__(
         self,
-        seq_fp,
+        ref_fp,
+        alt_fp,
         mpra_fp,
         chroms,
         steps_per_epoch,
@@ -63,10 +64,10 @@ class MPRAGen(tf.keras.utils.Sequence):
         self.rc_augmentation = rc_augmentation
         self.swap_alleles = swap_alleles
         self.shuffle = shuffle
-        X, y = load_data(seq_fp, mpra_fp)
+        X, y = load_data(ref_fp, alt_fp, mpra_fp)
         self.X = X
         self.y = y
-        self.on_epoch_end()
+        self.index = np.arange(len(y))
 
     def __len__(self):
         """Denotes the number of batches per epoch"""
@@ -75,14 +76,17 @@ class MPRAGen(tf.keras.utils.Sequence):
     def on_epoch_end(self):
         """Shuffles fold indexes on start and after each epoch."""
         if self.shuffle:
-            random.shuffle(self.fold_list)
+            np.random.shuffle(self.index)
 
     def __getitem__(self, index):
         """
         Gets a batch of data.
         """
-        X = [x[index, :, :] for x in self.X]
-        y = self.y[index]
+        batch_indices = self.index[
+            index * self.batch_size : (index + 1) * self.batch_size
+        ]
+        X = [x[batch_indices, :, :] for x in self.X]
+        y = self.y[batch_indices]
         if self.rc_augmentation and random.random() > 0.5:
             X = [x[:, ::-1, ::-1] for x in X]
         if self.swap_alleles and random.random() > 0.5:

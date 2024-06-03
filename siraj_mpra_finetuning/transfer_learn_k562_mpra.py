@@ -9,6 +9,7 @@ from tqdm.keras import TqdmCallback
 
 sys.path.append("/home2/ayh8/clipnet/")
 import clipnet
+import custom_loss
 import mpra_gen
 import rnn_v10
 
@@ -83,7 +84,7 @@ mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=log
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
     loss="mse",
-    metrics=["mae"],
+    metrics=["mae", custom_loss.PearsonCorrelation],
 )
 
 # Compile the model
