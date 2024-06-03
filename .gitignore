@@ -4,7 +4,7 @@
 */*/*.pth
 */*.model
 */*/*.model
-data/*/*.fa.gz
+data/*/*.fa.gz*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
