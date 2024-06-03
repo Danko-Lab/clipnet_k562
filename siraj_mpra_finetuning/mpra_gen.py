@@ -6,11 +6,13 @@ assist in loading data while training CLIPNET models.
 import logging
 import os
 import random
+import sys
 
 import numpy as np
 import pandas as pd
 import pyfastx
 
+sys.path.append("../../clipnet/")
 import utils
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
@@ -29,9 +31,9 @@ def load_data(
     print(
         f"Loading sequence data from {ref_fp} and {alt_fp} and MPRA data from {mpra_fp}"
     )
-    ref = utils.get_twohot_fasta_sequences(ref_fp)
-    ref_chroms = [x.name.split(":")[0] for x in pyfastx.Fasta(ref_fp)]
-    alt = utils.get_twohot_fasta_sequences(alt_fp)
+    ref = pyfastx.Fasta(ref_fp)
+    ref_chroms = [x.name.split(":")[0] for x in ref]
+    alt = pyfastx.Fasta(alt_fp)
     mpra = pd.read_csv(mpra_fp, sep="\t")
     y = np.log2(
         (mpra.mean_RNA_alt_K562 / mpra.mean_Plasmid_alt_K562)
@@ -39,9 +41,13 @@ def load_data(
     )
     if chroms is not None:
         include = np.where(np.isin(ref_chroms, chroms))
-        X = [ref[include], alt[include]]
+        X = [[ref[i].seq for i in include], [alt[i].seq for i in include]]
         y = y[include]
     print("Successfully loaded data")
+    X = [
+        np.array([utils.twohot(x) for x in X[0]]),
+        np.array([utils.twohot(x) for x in X[1]]),
+    ]
     # do rc_augmentation
     if reverse_complement:
         X = [utils.rc_twohot_het(x) for x in X]

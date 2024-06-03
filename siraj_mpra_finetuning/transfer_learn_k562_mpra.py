@@ -1,5 +1,4 @@
 import logging
-import math
 import os
 import sys
 from pathlib import Path
@@ -38,7 +37,7 @@ def warmup_lr(epoch, lr):
 # Create data loaders for training and validation
 ref_fp = "../data/mpra/k562_mpra_snps_ft_ref.fa.gz"
 alt_fp = "../data/mpra/k562_mpra_snps_ft_alt.fa.gz"
-mpra_fp = "../siraj_mpra/media-3_oligos_snps.tsv.gz"
+mpra_fp = "../siraj_mpra/media-4-K562_allelic_mpra.tsv.gz"
 
 chroms = (
     pd.read_csv("clipnet_data_fold_assignments.csv")
