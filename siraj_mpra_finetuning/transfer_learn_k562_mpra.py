@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
 
-sys.path.append("/home2/ayh8/clipnet/")
+sys.path.append("../../clipnet/")
 import clipnet
 import custom_loss
 import mpra_gen
@@ -57,13 +57,13 @@ val_gen = mpra_gen.MPRAGen(*val_args)
 nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
 
 # Load the reference and alternative models
-outdir = Path(f"../k562_mpra_ensemble_models/f{fold}/")
+outdir = Path(f"../models/clipnet_k562_mpra/f{fold}/")
 
 ref_model = tf.keras.models.load_model(
-    f"/home2/ayh8/clipnet/ensemble_models/fold_{fold}.h5", compile=False
+    f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
 alt_model = tf.keras.models.load_model(
-    f"/home2/ayh8/clipnet/ensemble_models/fold_{fold}.h5", compile=False
+    f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
 ref_model.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
