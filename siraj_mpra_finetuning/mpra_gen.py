@@ -31,9 +31,11 @@ def load_data(
     print(
         f"Loading sequence data from {ref_fp} and {alt_fp} and MPRA data from {mpra_fp}"
     )
-    ref = utils.get_twohot_fasta_sequences(ref_fp)
-    ref_chroms = [x.name.split(":")[0] for x in pyfastx.Fasta(ref_fp)]
+    ref = pyfastx.Fasta(ref_fp)
+    ref_seqs = [x.seq for x in ref]
+    ref_chroms = [x.name.split(":")[0] for x in ref]
     alt = utils.get_twohot_fasta_sequences(alt_fp)
+    alt_seqs = [x.seq for x in alt]
     mpra = pd.read_csv(mpra_fp, sep="\t")
     y = np.log2(
         (mpra.mean_RNA_alt_K562 / mpra.mean_Plasmid_alt_K562)
@@ -41,8 +43,10 @@ def load_data(
     )
     if chroms is not None:
         include = np.where(np.isin(ref_chroms, chroms))
-        X = [[ref[i].seq for i in include], [alt[i].seq for i in include]]
+        X = [[ref_seqs[i] for i in include], [alt_seqs[i] for i in include]]
         y = y[include]
+    # convert to twohot
+    X = [np.array([utils.get_twohot(seq) for seq in x]) for x in X]
     print("Successfully loaded data")
     # do rc_augmentation
     if reverse_complement:
