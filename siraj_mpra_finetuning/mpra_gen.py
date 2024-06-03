@@ -3,6 +3,8 @@ This file contains a number of functions and the class CGen (CLIPNET Generator) 
 assist in loading data while training CLIPNET models.
 """
 
+import logging
+import os
 import random
 
 import numpy as np
