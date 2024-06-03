@@ -37,7 +37,7 @@ def warmup_lr(epoch, lr):
 # Create data loaders for training and validation
 ref_fp = "../data/mpra/k562_mpra_snps_ft_ref.fa.gz"
 alt_fp = "../data/mpra/k562_mpra_snps_ft_alt.fa.gz"
-mpra_fp = "../siraj_mpra/media-4-K562_allelic_mpra.tsv.gz"
+mpra_fp = "../data/mpra/k562_allelic_mpra_snps.csv.gz"
 
 chroms = (
     pd.read_csv("clipnet_data_fold_assignments.csv")
@@ -92,7 +92,7 @@ alt_model.compile(
 )
 
 # Create a new model that outputs the log2 fold change
-log2fc = tf.keras.ops.log2((ref_model.output[1] + 1) / (alt_model.output[1] + 1))
+log2fc = tf.keras.ops.log2((ref_model.output[1]) / (alt_model.output[1]))
 mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=log2fc)
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),

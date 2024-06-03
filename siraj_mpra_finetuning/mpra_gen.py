@@ -11,6 +11,7 @@ import sys
 import numpy as np
 import pandas as pd
 import pyfastx
+import tqdm
 
 sys.path.append("../../clipnet/")
 import utils
@@ -21,7 +22,7 @@ import tensorflow as tf
 
 
 def load_data(
-    ref_fp: str, alt_fp: str, mpra_fp: str, chroms=None, reverse_complement=False
+    ref_fp: str, alt_fp: str, mpra_fp: str, chroms: list, reverse_complement=False
 ):
     """
     Load a single, unfolded dataset. Use reverse_complement=True to load dataset
@@ -31,25 +32,44 @@ def load_data(
     print(
         f"Loading sequence data from {ref_fp} and {alt_fp} and MPRA data from {mpra_fp}"
     )
+    mpra = pd.read_csv(mpra_fp, sep="\t")
+    mpra["chrom"] = mpra["variant"].str.split(":", expand=True)[0]
+    y = mpra["expt"]
+
     ref = pyfastx.Fasta(ref_fp)
     ref_seqs = [x.seq for x in ref]
-    ref_chroms = [x.name.split(":")[0] for x in ref]
-    alt = pyfastx.Fasta(ref_fp)
+    alt = pyfastx.Fasta(alt_fp)
     alt_seqs = [x.seq for x in alt]
-    mpra = pd.read_csv(mpra_fp, sep="\t")
-    y = np.log2(
-        (mpra.mean_RNA_alt_K562 / mpra.mean_Plasmid_alt_K562)
-        / (mpra.mean_RNA_ref_K562 / mpra.mean_Plasmid_ref_K562)
-    )
-    print(y.shape)
-    print(y.index)
-    if chroms is not None:
-        include = np.where(np.isin(ref_chroms, chroms))[0]
-        # print(include[0])
-        X = [[ref_seqs[i] for i in include], [alt_seqs[i] for i in include]]
-        y = y[include]
+
+    # Filter data to only include the specified chromosomes
+    include = np.where(np.isin(mpra["chrom"], chroms))[0]
+    var_names = [x.name.split("_")[0] for x in ref]
+    seq_includes = mpra["variant"][include].to_list()
+    # print(include[0])
+    X = [
+        [
+            ref_seqs[i]
+            for i in tqdm.trange(len(ref_seqs))
+            if var_names[i] in seq_includes
+        ],
+        [
+            alt_seqs[i]
+            for i in tqdm.trange(len(alt_seqs))
+            if var_names[i] in seq_includes
+        ],
+    ]
+    y = mpra["expt"][include]
+
     # convert to twohot
-    X = [np.array([utils.get_twohot(seq) for seq in x]) for x in X]
+    X = [
+        np.array(
+            [
+                utils.get_twohot(seq)
+                for seq in tqdm.tqdm(x, total=len(x), desc="Converting to twohot")
+            ]
+        )
+        for x in X
+    ]
     print("Successfully loaded data")
     # do rc_augmentation
     if reverse_complement:

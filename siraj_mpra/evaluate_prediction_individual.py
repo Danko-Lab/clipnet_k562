@@ -43,7 +43,6 @@ ref_pred = []
 alt_pred = []
 folds = []
 for i, row in snps.iterrows():
-    print(row)
     chrom = row["chrom"]
     if chrom in holdouts:
         fold = holdouts[chrom]
@@ -72,6 +71,8 @@ data["expt"] = np.log2(
     (data["mean_RNA_ref_K562"] / data["mean_Plasmid_ref_K562"])
     / (data["mean_RNA_alt_K562"] / data["mean_Plasmid_alt_K562"])
 )
+data.to_csv("/home2/ayh8/clipnet_k562/data/mpra/k562_allelic_mpra_snps.csv.gz", index=False)
+
 data["pred"] = np.log2(data["ref"] / data["alt"])
 data["pred_p"] = np.log2(data["ref_p"] / data["alt_p"])
 data = data[np.isfinite(data["pred"])]
@@ -82,7 +83,7 @@ pearsons = [
     for fold in range(10)
 ]
 
-    # pearsonr(data[data["fold"] == fold]["expt"], data[data["fold"] == fold]["pred_p"])
+# pearsonr(data[data["fold"] == fold]["expt"], data[data["fold"] == fold]["pred_p"])
 pearsonr(data["expt"], data["pred"])
 # PearsonRResult(statistic=0.24444150001598372, pvalue=0.0)
 pearsonr(data["expt"], data["pred_p"])
