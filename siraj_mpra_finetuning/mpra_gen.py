@@ -27,7 +27,7 @@ def load_data(
     """
     # load data and check dimensions
     print(
-        f"Loading sequence data from {ref_fp} and {alt_fp} and procap data from {mpra_fp}"
+        f"Loading sequence data from {ref_fp} and {alt_fp} and MPRA data from {mpra_fp}"
     )
     ref = utils.get_twohot_fasta_sequences(ref_fp)
     ref_chroms = [x.name.split(":")[0] for x in pyfastx.Fasta(ref_fp)]
