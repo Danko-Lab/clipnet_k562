@@ -2,13 +2,13 @@ import math
 import sys
 from pathlib import Path
 
-import clipnet
 import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
 
 sys.path.append("/home2/ayh8/clipnet/")
+import clipnet
 import mpra_gen
 import rnn_v10
 
@@ -80,6 +80,11 @@ alt_model.compile(
 # Create a new model that outputs the log2 fold change
 log2fc = tf.keras.ops.log2((ref_model.output[1] + 1) / (alt_model.output[1] + 1))
 mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=log2fc)
+mpra_net.compile(
+    optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
+    loss="mse",
+    metrics=["mae"],
+)
 
 # Compile the model
 mpra_net_filepath = str(outdir.joinpath("mpra_net.h5"))
