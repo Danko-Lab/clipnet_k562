@@ -81,11 +81,14 @@ class MPRAGen(tf.keras.utils.Sequence):
         """
         Gets a batch of data.
         """
-        batch = [x[index, :, :] for x in self.X], self.y[index]
+        X = [x[index, :, :] for x in self.X]
+        y = self.y[index]
         if self.rc_augmentation and random.random() > 0.5:
-            #batch = self.rc_augment(batch)
+            X = [x[:, ::-1, ::-1] for x in X]
         if self.swap_alleles and random.random() > 0.5:
-            #batch = self.swap_alleles(batch)
+            X = [X[1], X[0]]
+            y = -y
         if self.max_jitter > 0:
-            #batch = self.jitter(batch)
-        return batch
+            jitter = random.randint(0, self.max_jitter)
+            X = [x[:, jitter : x.shape[1] + jitter, :] for x in X]
+        return X, y
