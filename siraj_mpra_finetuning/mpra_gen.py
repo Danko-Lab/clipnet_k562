@@ -43,6 +43,7 @@ def load_data(
     )
     if chroms is not None:
         include = np.where(np.isin(ref_chroms, chroms))
+        print(include)
         X = [[ref_seqs[i] for i in include], [alt_seqs[i] for i in include]]
         y = y[include]
     # convert to twohot
