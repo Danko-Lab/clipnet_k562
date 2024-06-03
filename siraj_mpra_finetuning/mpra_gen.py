@@ -56,20 +56,19 @@ class MPRAGen(tf.keras.utils.Sequence):
         alt_fp,
         mpra_fp,
         chroms,
-        steps_per_epoch,
         batch_size,
         max_jitter=100,
         rc_augmentation=True,
         swap_alleles=True,
         shuffle=True,
     ):
-        self.steps_per_epoch = steps_per_epoch
         self.batch_size = batch_size
         self.max_jitter = max_jitter
         self.rc_augmentation = rc_augmentation
         self.swap_alleles = swap_alleles
         self.shuffle = shuffle
-        X, y = load_data(ref_fp, alt_fp, mpra_fp)
+        X, y = load_data(ref_fp, alt_fp, mpra_fp, chroms)
+        self.steps_per_epoch = len(y) // batch_size
         self.X = X
         self.y = y
         self.index = np.arange(len(y))

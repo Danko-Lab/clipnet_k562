@@ -36,9 +36,6 @@ def warmup_lr(epoch, lr):
 
 
 # Create data loaders for training and validation
-steps_per_epoch = math.floor(336475 / rnn_v10.batch_size)
-steps_per_val_epoch = math.floor(336475 / rnn_v10.batch_size)
-
 ref_fp = "../data/mpra/k562_mpra_snps_ft_ref.fa.gz"
 alt_fp = "../data/mpra/k562_mpra_snps_ft_alt.fa.gz"
 mpra_fp = "../siraj_mpra/media-3_oligos_snps.tsv.gz"
@@ -53,8 +50,20 @@ train_chroms = [k for k, v in chroms.items() if v not in [fold, fold % 9 + 1, 0]
 val_chroms = [k for k, v in chroms.items() if v == fold % 9 + 1]
 print(f"Training on {train_chroms} and validating on {val_chroms}")
 
-train_args = [ref_fp, alt_fp, mpra_fp, train_chroms]
-val_args = [ref_fp, alt_fp, mpra_fp, val_chroms]
+train_args = [
+    ref_fp,
+    alt_fp,
+    mpra_fp,
+    train_chroms,
+    rnn_v10.batch_size,
+]
+val_args = [
+    ref_fp,
+    alt_fp,
+    mpra_fp,
+    val_chroms,
+    rnn_v10.batch_size,
+]
 train_gen = mpra_gen.MPRAGen(*train_args)
 val_gen = mpra_gen.MPRAGen(*val_args)
 
