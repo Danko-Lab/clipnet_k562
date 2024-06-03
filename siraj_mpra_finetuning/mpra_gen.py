@@ -41,9 +41,11 @@ def load_data(
         (mpra.mean_RNA_alt_K562 / mpra.mean_Plasmid_alt_K562)
         / (mpra.mean_RNA_ref_K562 / mpra.mean_Plasmid_ref_K562)
     )
+    print(y.shape)
+    print(y.index)
     if chroms is not None:
         include = np.where(np.isin(ref_chroms, chroms))[0]
-        print(include[0])
+        # print(include[0])
         X = [[ref_seqs[i] for i in include], [alt_seqs[i] for i in include]]
         y = y[include]
     # convert to twohot
