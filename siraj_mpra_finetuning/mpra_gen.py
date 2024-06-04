@@ -93,3 +93,20 @@ class MPRAGen(tf.keras.utils.Sequence):
             jitter = random.randint(0, self.max_jitter)
             X = [x[:, jitter : x.shape[1] + jitter, :] for x in X]
         return X, y
+
+
+def create_data_loader(generator):
+    """
+    Create a data loader for training and validation.
+    """
+    data_loader = tf.data.Dataset.from_generator(
+        generator,
+        output_signature=(
+            (
+                tf.TensorSpec(shape=(None, 4, 1000), dtype=tf.float32),
+                tf.TensorSpec(shape=(None, 4, 1000), dtype=tf.float32),
+            ),
+            tf.TensorSpec(shape=(None,), dtype=tf.float32),
+        ),
+    )
+    return data_loader
