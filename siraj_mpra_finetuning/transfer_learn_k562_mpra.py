@@ -27,7 +27,7 @@ def warmup_lr(epoch, lr):
     """
     print(f"LEARNING RATE = {lr}")
     if epoch < 1:
-        return lr / 10
+        return lr / 100
     elif epoch == 1:
         return lr * 10
     else:
@@ -84,6 +84,8 @@ alt_model.compile(
     loss_weights={"shape": 1, "sum": 1 / 500},
     metrics=rnn_v10.metrics,
 )
+for layer in alt_model.layers:
+    layer._name = layer.name + str("_alt")
 
 # Create a new model that outputs the log2 fold change
 logfc = tf.math.log((ref_model.output[1]) / (alt_model.output[1]))
