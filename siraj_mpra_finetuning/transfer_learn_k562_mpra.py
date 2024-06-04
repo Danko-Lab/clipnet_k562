@@ -109,6 +109,7 @@ fit_model = mpra_net.fit(
     x=train_gen,
     validation_data=val_gen,
     epochs=rnn_v10.epochs,
+    batch_size=rnn_v10.batch_size,
     steps_per_epoch=train_gen.steps_per_epoch,
     validation_steps=val_gen.steps_per_epoch,
     verbose=0,
