@@ -122,4 +122,4 @@ def create_data_loader(generator):
             tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
         ),
     )
-    return data_loader
+    return data_loader, generator.steps_per_epoch

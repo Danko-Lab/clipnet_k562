@@ -51,8 +51,8 @@ print(f"Training on folds {train_folds} and validating on fold {val_folds}.")
 
 train_args = [data_fp, train_folds, rnn_v10.batch_size]
 val_args = [data_fp, val_folds, rnn_v10.batch_size]
-train_gen = mpra_gen.create_data_loader(mpra_gen.MPRAGen(*train_args))
-val_gen = mpra_gen.create_data_loader(mpra_gen.MPRAGen(*val_args))
+train_gen, steps_per_epoch = mpra_gen.create_data_loader(mpra_gen.MPRAGen(*train_args))
+val_gen, validation_steps = mpra_gen.create_data_loader(mpra_gen.MPRAGen(*val_args))
 
 # Load the reference and alternative models
 outdir = Path(f"../models/clipnet_k562_mpra/f{fold}/")
@@ -108,8 +108,8 @@ fit_model = mpra_net.fit(
     x=train_gen,
     validation_data=val_gen,
     epochs=rnn_v10.epochs,
-    steps_per_epoch=train_gen.steps_per_epoch,
-    validation_steps=val_gen.steps_per_epoch,
+    steps_per_epoch=steps_per_epoch,
+    validation_steps=validation_steps,
     verbose=0,
     callbacks=[
         chkpt,
