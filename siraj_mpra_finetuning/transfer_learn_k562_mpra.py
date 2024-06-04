@@ -13,7 +13,6 @@ from tqdm.keras import TqdmCallback
 
 sys.path.append("../../clipnet/")
 import clipnet
-import custom_loss
 import mpra_gen
 import rnn_v10
 
@@ -47,16 +46,8 @@ train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
 val_folds = [fold % 9 + 1]
 print(f"Training on {train_folds} and validating on {val_folds}")
 
-train_args = [
-    data_fp,
-    train_folds,
-    rnn_v10.batch_size,
-]
-val_args = [
-    data_fp,
-    val_folds,
-    rnn_v10.batch_size,
-]
+train_args = [data_fp, train_folds, rnn_v10.batch_size]
+val_args = [data_fp, val_folds, rnn_v10.batch_size]
 train_gen = mpra_gen.MPRAGen(*train_args)
 val_gen = mpra_gen.MPRAGen(*val_args)
 
@@ -93,7 +84,7 @@ mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=log
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
     loss="mse",
-    metrics=["mae", custom_loss.pearsonr],
+    metrics="mae",
 )
 for layer in mpra_net.layers:
     if isinstance(layer, tf.keras.layers.BatchNormalization):
