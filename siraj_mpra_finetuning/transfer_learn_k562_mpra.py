@@ -97,9 +97,9 @@ mpra_net.compile(
 )
 for layer in mpra_net.layers:
     if isinstance(layer, tf.keras.layers.BatchNormalization):
-        layer.trainable = True
-    else:
         layer.trainable = False
+    else:
+        layer.trainable = True
 
 # Compile the model
 mpra_net_filepath = str(outdir.joinpath("mpra_net.h5"))
