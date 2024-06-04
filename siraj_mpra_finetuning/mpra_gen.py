@@ -50,20 +50,31 @@ class MPRAGen(tf.keras.utils.Sequence):
         data_fp,
         folds,
         batch_size,
+        in_window=1000,
         max_jitter=100,
         rc_augmentation=True,
         swap_alleles=True,
         shuffle=True,
     ):
         self.batch_size = batch_size
-        self.max_jitter = max_jitter
         self.rc_augmentation = rc_augmentation
         self.swap_alleles = swap_alleles
         self.shuffle = shuffle
         X, y = load_data(data_fp, folds)
+        assert X[0].shape == X[1].shape, (
+            "Reference and alternative sequence shapes must match."
+            + f"{X[0].shape} != {X[1].shape}"
+        )
         self.steps_per_epoch = len(y) // batch_size
         self.X = X
         self.y = y
+        self.in_window = in_window
+        self.trim = (X[0].shape[1] - in_window) // 2
+        assert max_jitter <= self.trim, (
+            "Max jitter must be less than or equal to the inferred max jitter."
+            + f"{max_jitter} > {self.trim}"
+        )
+        self.max_jitter = max_jitter
         self.index = np.arange(len(y))
 
     def __len__(self):
@@ -91,7 +102,9 @@ class MPRAGen(tf.keras.utils.Sequence):
             y = -y
         if self.max_jitter > 0:
             jitter = random.randint(0, self.max_jitter)
-            X = [x[:, jitter : x.shape[1] + jitter, :] for x in X]
+            X = [x[:, jitter : self.in_window + jitter, :] for x in X]
+        else:
+            X = [x[:, self.trim : x.shape[1] - self.trim, :] for x in X]
         return X, y
 
 
@@ -103,8 +116,8 @@ def create_data_loader(generator):
         generator,
         output_signature=(
             (
-                tf.TensorSpec(shape=(None, 4, 1000), dtype=tf.float32),
-                tf.TensorSpec(shape=(None, 4, 1000), dtype=tf.float32),
+                tf.TensorSpec(shape=(None, 1000, 4), dtype=tf.float32),
+                tf.TensorSpec(shape=(None, 1000, 4), dtype=tf.float32),
             ),
             tf.TensorSpec(shape=(None,), dtype=tf.float32),
         ),
