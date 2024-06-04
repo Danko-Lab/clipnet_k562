@@ -35,9 +35,7 @@ def warmup_lr(epoch, lr):
 
 
 # Create data loaders for training and validation
-ref_fp = "../data/mpra/k562_mpra_snps_ft_ref.fa.gz"
-alt_fp = "../data/mpra/k562_mpra_snps_ft_alt.fa.gz"
-mpra_fp = "../data/mpra/k562_allelic_mpra_snps.csv.gz"
+data_fp = "../data/mpra/processed_k562_mpra_data_clipnet_ft.csv.gz"
 
 chroms = (
     pd.read_csv("clipnet_data_fold_assignments.csv")
@@ -45,21 +43,17 @@ chroms = (
     .to_dict()["fold"]
 )
 
-train_chroms = [k for k, v in chroms.items() if v not in [fold, fold % 9 + 1, 0]]
-val_chroms = [k for k, v in chroms.items() if v == fold % 9 + 1]
+train_chroms = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
+val_chroms = [fold % 9 + 1]
 print(f"Training on {train_chroms} and validating on {val_chroms}")
 
 train_args = [
-    ref_fp,
-    alt_fp,
-    mpra_fp,
+    data_fp,
     train_chroms,
     rnn_v10.batch_size,
 ]
 val_args = [
-    ref_fp,
-    alt_fp,
-    mpra_fp,
+    data_fp,
     val_chroms,
     rnn_v10.batch_size,
 ]

@@ -10,7 +10,6 @@ import sys
 
 import numpy as np
 import pandas as pd
-import tqdm
 
 sys.path.append("../../clipnet/")
 import utils
@@ -20,7 +19,7 @@ logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
 
 
-def load_data(data_fp: str, folds: list, reverse_complement=False):
+def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
     """
     Load a single, unfolded dataset. Use reverse_complement=True to load dataset
     reverse complemented.
@@ -31,8 +30,10 @@ def load_data(data_fp: str, folds: list, reverse_complement=False):
     # Filter data to only include the specified folds
     data = data[data["fold"].isin(folds)]
     # print(include[0])
-    X = [data["ref_seq"].values, data["alt_seq"].values]
-    X_twohot = [utils.twohot(x) for x in X]
+    X = [
+        utils.get_twohot_from_series(data["ref_seq"], cores=cores),
+        utils.get_twohot_from_series(data["alt_seq"], cores=cores),
+    ]
     y = np.log(
         (data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562)
         / (data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562)
