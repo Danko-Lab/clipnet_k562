@@ -121,5 +121,5 @@ def create_data_loader(generator):
             ),
             tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
         ),
-    ).batch_size(generator.batch_size)
+    )
     return data_loader
