@@ -48,8 +48,8 @@ print(f"Training on folds {train_folds} and validating on fold {val_folds}.")
 
 train_args = [data_fp, train_folds, rnn_v10.batch_size]
 val_args = [data_fp, val_folds, rnn_v10.batch_size]
-train_gen = mpra_gen.create_data_loader(mpra_gen.MPRAGen(*train_args))
-val_gen = mpra_gen.create_data_loader(mpra_gen.MPRAGen(*val_args))
+train_gen = mpra_gen.MPRAGen(*train_args)
+val_gen = mpra_gen.MPRAGen(*val_args)
 
 # Specify GPU usage
 nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
