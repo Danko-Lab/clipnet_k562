@@ -95,6 +95,11 @@ mpra_net.compile(
     loss="mse",
     metrics=["mae", custom_loss.pearsonr],
 )
+for layer in mpra_net.layers:
+    if isinstance(layer, tf.keras.layers.BatchNormalization):
+        layer.trainable = True
+    else:
+        layer.trainable = False
 
 # Compile the model
 mpra_net_filepath = str(outdir.joinpath("mpra_net.h5"))
