@@ -91,7 +91,7 @@ mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=log
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
     loss="mse",
-    metrics=["mae", custom_loss.PearsonCorrelation],
+    metrics=["mae", custom_loss.pearsonr],
 )
 
 # Compile the model
