@@ -3,8 +3,6 @@ import os
 import sys
 from pathlib import Path
 
-import pandas as pd
-
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
@@ -16,8 +14,8 @@ import clipnet
 import mpra_gen
 import rnn_v10
 
-fold = int(sys.argv[1])
-gpu = int(sys.argv[2])
+fold = 1  # fold = int(sys.argv[1])
+gpu = 0  # gpu = int(sys.argv[2])
 
 
 # Specify GPU usage
@@ -58,6 +56,8 @@ ref_model = tf.keras.models.load_model(
 alt_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
+for layer in ref_model.layers:
+    layer._name = layer.name + str("_ref")
 for layer in alt_model.layers:
     layer._name = layer.name + str("_alt")
 
@@ -87,11 +87,11 @@ csv_logger = CSVLogger(
 )
 
 # Fit the model
-fit_model = mpra_net.fit(
+fit_model = mpra_net.fit_generator(
     x=train_gen,
     validation_data=val_gen,
     epochs=rnn_v10.epochs,
-    batch_size=rnn_v10.batch_size,
+    # batch_size=rnn_v10.batch_size,
     steps_per_epoch=train_gen.steps_per_epoch,
     validation_steps=val_gen.steps_per_epoch,
     verbose=0,

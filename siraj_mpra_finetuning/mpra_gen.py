@@ -77,6 +77,7 @@ class MPRAGen(Sequence):
         )
         self.max_jitter = max_jitter
         self.index = np.arange(len(y))
+        self.on_epoch_end()
 
     def __len__(self):
         """Denotes the number of batches per epoch"""
