@@ -117,10 +117,10 @@ def create_data_loader(generator):
     data_loader = tf.data.Dataset.from_generator(
         lambda: generator,
         output_signature=(
-            (
+            [
                 tf.TensorSpec(shape=(None, generator.in_window, 4), dtype=tf.float32),
                 tf.TensorSpec(shape=(None, generator.in_window, 4), dtype=tf.float32),
-            ),
+            ],
             tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
         ),
     )
