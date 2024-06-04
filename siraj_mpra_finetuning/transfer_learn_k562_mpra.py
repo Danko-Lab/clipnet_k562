@@ -44,7 +44,7 @@ chroms = (
 
 train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
 val_folds = [fold % 9 + 1]
-print(f"Training on {train_folds} and validating on {val_folds}")
+print(f"Training on folds {train_folds} and validating on fold {val_folds}.")
 
 train_args = [data_fp, train_folds, rnn_v10.batch_size]
 val_args = [data_fp, val_folds, rnn_v10.batch_size]
