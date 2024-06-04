@@ -17,6 +17,7 @@ import utils
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
+from tensorflow.keras.utils import Sequence
 
 
 def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
@@ -44,7 +45,7 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
     return X, y
 
 
-class MPRAGen(tf.keras.utils.Sequence):
+class MPRAGen(Sequence):
     def __init__(
         self,
         data_fp,
