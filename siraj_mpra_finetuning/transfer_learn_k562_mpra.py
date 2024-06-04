@@ -43,18 +43,18 @@ chroms = (
     .to_dict()["fold"]
 )
 
-train_chroms = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
-val_chroms = [fold % 9 + 1]
-print(f"Training on {train_chroms} and validating on {val_chroms}")
+train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
+val_folds = [fold % 9 + 1]
+print(f"Training on {train_folds} and validating on {val_folds}")
 
 train_args = [
     data_fp,
-    train_chroms,
+    train_folds,
     rnn_v10.batch_size,
 ]
 val_args = [
     data_fp,
-    val_chroms,
+    val_folds,
     rnn_v10.batch_size,
 ]
 train_gen = mpra_gen.MPRAGen(*train_args)
@@ -110,7 +110,7 @@ fit_model = mpra_net.fit(
     x=train_gen,
     validation_data=val_gen,
     epochs=rnn_v10.epochs,
-    steps_per_epoch=steps_per_epoch,
+    #    steps_per_epoch=steps_per_epoch,
     verbose=0,
     callbacks=[
         checkpoint,

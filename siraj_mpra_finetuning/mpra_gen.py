@@ -47,10 +47,8 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
 class MPRAGen(tf.keras.utils.Sequence):
     def __init__(
         self,
-        ref_fp,
-        alt_fp,
-        mpra_fp,
-        chroms,
+        data_fp,
+        folds,
         batch_size,
         max_jitter=100,
         rc_augmentation=True,
@@ -62,7 +60,7 @@ class MPRAGen(tf.keras.utils.Sequence):
         self.rc_augmentation = rc_augmentation
         self.swap_alleles = swap_alleles
         self.shuffle = shuffle
-        X, y = load_data(ref_fp, alt_fp, mpra_fp, chroms)
+        X, y = load_data(data_fp, folds)
         self.steps_per_epoch = len(y) // batch_size
         self.X = X
         self.y = y
