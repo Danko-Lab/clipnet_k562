@@ -40,12 +40,6 @@ def warmup_lr(epoch, lr):
 # Create data loaders for training and validation
 data_fp = "../data/mpra/processed_k562_mpra_data_clipnet_ft.csv.gz"
 
-chroms = (
-    pd.read_csv("clipnet_data_fold_assignments.csv")
-    .set_index("chrom")
-    .to_dict()["fold"]
-)
-
 train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
 val_folds = [fold % 9 + 1]
 print(f"Training on folds {train_folds} and validating on fold {val_folds}.")
@@ -63,18 +57,6 @@ ref_model = tf.keras.models.load_model(
 )
 alt_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
-)
-ref_model.compile(
-    optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
-    loss=rnn_v10.loss,
-    loss_weights={"shape": 1, "sum": 1 / 500},
-    metrics=rnn_v10.metrics,
-)
-alt_model.compile(
-    optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
-    loss=rnn_v10.loss,
-    loss_weights={"shape": 1, "sum": 1 / 500},
-    metrics=rnn_v10.metrics,
 )
 for layer in alt_model.layers:
     layer._name = layer.name + str("_alt")
