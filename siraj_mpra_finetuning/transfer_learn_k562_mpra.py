@@ -94,7 +94,7 @@ for layer in mpra_net.layers:
 
 # Compile the model
 mpra_net_filepath = str(outdir.joinpath("mpra_net.h5"))
-checkpoint = tf.keras.callbacks.ModelCheckpoint(
+chkpt = tf.keras.callbacks.ModelCheckpoint(
     mpra_net_filepath, verbose=0, save_best_only=True
 )
 early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=10)
@@ -111,7 +111,7 @@ fit_model = mpra_net.fit(
     #    steps_per_epoch=steps_per_epoch,
     verbose=0,
     callbacks=[
-        checkpoint,
+        chkpt,
         early_stopping,
         tqdm_callback,
         csv_logger,
