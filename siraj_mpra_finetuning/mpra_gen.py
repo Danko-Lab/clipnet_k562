@@ -105,6 +105,8 @@ class MPRAGen(tf.keras.utils.Sequence):
             X = [x[:, jitter : self.in_window + jitter, :] for x in X]
         else:
             X = [x[:, self.trim : x.shape[1] - self.trim, :] for x in X]
+        X = [tf.convert_to_tensor(x.copy(), dtype=tf.float32) for x in X]
+        y = tf.convert_to_tensor(y.copy(), dtype=tf.float32)
         return X, y
 
 
