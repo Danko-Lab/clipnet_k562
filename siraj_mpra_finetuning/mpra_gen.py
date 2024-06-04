@@ -105,7 +105,7 @@ class MPRAGen(tf.keras.utils.Sequence):
             X = [x[:, jitter : self.in_window + jitter, :] for x in X]
         else:
             X = [x[:, self.trim : x.shape[1] - self.trim, :] for x in X]
-        X = [tf.convert_to_tensor(x.copy(), dtype=tf.float32) for x in X]
+        X = (tf.convert_to_tensor(x.copy(), dtype=tf.float32) for x in X)
         y = tf.convert_to_tensor(y.copy(), dtype=tf.float32)
         return X, y
 
@@ -117,10 +117,10 @@ def create_data_loader(generator):
     data_loader = tf.data.Dataset.from_generator(
         lambda: generator,
         output_signature=(
-            [
+            (
                 tf.TensorSpec(shape=(None, generator.in_window, 4), dtype=tf.float32),
                 tf.TensorSpec(shape=(None, generator.in_window, 4), dtype=tf.float32),
-            ],
+            ),
             tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
         ),
     )
