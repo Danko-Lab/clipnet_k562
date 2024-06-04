@@ -113,13 +113,13 @@ def create_data_loader(generator):
     Create a data loader for training and validation.
     """
     data_loader = tf.data.Dataset.from_generator(
-        generator,
+        lambda: generator,
         output_signature=(
             (
-                tf.TensorSpec(shape=(None, 1000, 4), dtype=tf.float32),
-                tf.TensorSpec(shape=(None, 1000, 4), dtype=tf.float32),
+                tf.TensorSpec(shape=(None, generator.in_window, 4), dtype=tf.float32),
+                tf.TensorSpec(shape=(None, generator.in_window, 4), dtype=tf.float32),
             ),
-            tf.TensorSpec(shape=(None,), dtype=tf.float32),
+            tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
         ),
-    )
+    ).batch_size(generator.batch_size)
     return data_loader
