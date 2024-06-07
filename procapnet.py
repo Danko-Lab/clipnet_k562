@@ -1,77 +1,18 @@
-### Code here is modified from Jacob's Schreiber's
-### implementation of BPNet, called BPNet-lite:
-### https://github.com/jmschrei/bpnet-lite/
-
-
 import numpy as np
 import torch
 
-torch.backends.cudnn.benchmark = True
 
+class ProCapNet(torch.nn.Module):
 
-class Model(torch.nn.Module):
-    """A basic BPNet model with stranded profile and total count prediction.
-    This is a reference implementation for BPNet. The model takes in
-    one-hot encoded sequence, runs it through:
-    (1) a single wide convolution operation
-    THEN
-    (2) a user-defined number of dilated residual convolutions
-    THEN
-    (3a) profile predictions done using a very wide convolution layer
-    AND
-    (3b) total count prediction done using an average pooling on the output
-    from 2 followed by a dense layer.
-
-    This implementation differs from the original BPNet implementation in
-    two ways:
-    (1) A single log softmax is applied across both strands such that
-    the logsumexp of both strands together is 0. Put another way, the
-    two strands are concatenated together, a log softmax is applied,
-    and the MNLL loss is calculated on the concatenation.
-    (2) The count prediction task is predicting the total counts across
-    both strands. The counts are then distributed across strands according
-    to the single log softmax from 1.
-
-    Parameters
-    ----------
-    model_save_prefix: str
-        filepath to save model and performance metrics to.
-    n_filters: int, optional
-        The number of filters to use per convolution. Default is 64.
-    n_layers: int, optional
-        The number of dilated residual layers to include in the model.
-        Default is 8.
-    n_outputs: int, optional
-        The number of outputs from the model. Generally either 1 or 2
-        depending on if the data is unstranded or stranded. Default is 2.
-    alpha: float, optional
-        The weight to put on the count loss.
-    trimming: int or None, optional
-        The amount to trim from both sides of the input window to get the
-        output window. This value is removed from both sides, so the total
-        number of positions removed is 2*trimming.
-    """
-
-    def __init__(
-        self,
-        model_save_path,
-        n_filters=64,
-        n_layers=8,
-        n_outputs=2,
-        alpha=1,
-        trimming=None,
-    ):
-        super(Model, self).__init__()
+    def __init__(self, n_filters=512, n_layers=8, n_outputs=2):
+        super(ProCapNet, self).__init__()
         self.n_filters = n_filters
         self.n_layers = n_layers
         self.n_outputs = n_outputs
-        self.alpha = alpha
-        self.trimming = trimming or 2**n_layers
-        self.model_save_path = model_save_path
-        self.train_metrics = []
+        self.trimming = 557
+        self.deconv_kernel_size = 75
 
         self.iconv = torch.nn.Conv1d(4, n_filters, kernel_size=21, padding=10)
-
         self.rconvs = torch.nn.ModuleList(
             [
                 torch.nn.Conv1d(
@@ -80,8 +21,6 @@ class Model(torch.nn.Module):
                 for i in range(1, self.n_layers + 1)
             ]
         )
-
-        self.deconv_kernel_size = 75  # will need in forward() to crop padding
         self.fconv = torch.nn.Conv1d(
             n_filters, n_outputs, kernel_size=self.deconv_kernel_size
         )
@@ -136,3 +75,8 @@ class Model(torch.nn.Module):
         y_profile = torch.nn.LogSoftmax(dim=-1)(y_profile)
         y_profile = y_profile.reshape(y_profile.shape[0], self.n_outputs, -1)
         return y_profile
+
+
+# model = ProCapNet()
+# model.load_state_dict(torch.load(model_path))
+# model.eval()

@@ -20,10 +20,14 @@ models = [
 
 ref_seqs = [rec.seq for rec in pyfastx.Fasta("data/mpra/k562_mpra_snps_2114_ref.fa.gz")]
 
-ref_ohe = np.array([utils.one_hot_encode(seq) for seq in ref_seqs])
+ref_ohe = np.array([utils.one_hot_encode(seq) for seq in ref_seqs]).swapaxes(1, 2)
 ref_pred = []
 for model in tqdm.tqdm(models):
-    ref_pred.append(predict(model, torch.tensor(ref_seqs).to(torch.float).cuda()))
+    ref_pred.append(predict(model, torch.tensor(ref_ohe).to(torch.float).cuda()))
+    
+ref_self_pred = []
+for model in tqdm.tqdm(models):
+    ref_pred.append(model.predict(torch.tensor(ref_ohe).to(torch.float).cuda()))
 
 ref_quantity = [p[1][:, 0] for p in ref_pred]
 
