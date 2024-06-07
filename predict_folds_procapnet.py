@@ -2,13 +2,14 @@ import glob
 import os
 
 import h5py
+import numpy as np
+import pyfastx
 import torch
 import tqdm
-import numpy as np
+from tangermeme.predict import predict
 
 import procapnet
 import utils
-from tangermeme.predict import predict
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -17,12 +18,9 @@ models = [
     for i in range(7)
 ]
 
-ref_seqs = (
-    utils.get_twohot_fasta_sequences(
-        "data/mpra/k562_mpra_snps_2114_ref.fa.gz"
-    ).swapaxes(1, 2)
-    / 2
-)
+ref_seqs = [rec.seq for rec in pyfastx.Fasta("data/mpra/k562_mpra_snps_2114_ref.fa.gz")]
+
+ref_ohe = np.array([utils.one_hot_encode(seq) for seq in ref_seqs])
 ref_pred = []
 for model in tqdm.tqdm(models):
     ref_pred.append(predict(model, torch.tensor(ref_seqs).to(torch.float).cuda()))

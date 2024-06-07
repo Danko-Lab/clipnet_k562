@@ -74,7 +74,7 @@ def one_hot_encode(
     alphabet_lookup = {char: i for i, char in enumerate(alphabet)}
 
     ohe = np.zeros((len(sequence), len(alphabet)), dtype=dtype)
-    for i, char in tqdm(enumerate(sequence), disable=d, desc=desc, **kwargs):
+    for i, char in tqdm.tqdm(enumerate(sequence), disable=d, desc=desc, **kwargs):
         if char in alphabet:
             idx = alphabet_lookup[char]
             ohe[i, idx] = 1
