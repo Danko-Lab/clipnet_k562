@@ -71,7 +71,7 @@ python predict_ensemble_procapnet.py \
     --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
     --gpu 0
 
-
+python predict_
 ```
 
 ## Calculate performance metrics

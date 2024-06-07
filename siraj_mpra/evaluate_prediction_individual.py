@@ -22,10 +22,7 @@ alt = [
     ][:, 0]
     for i in range(1, 10)
 ]
-ref_p = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_procapnet.h5")[
-    "quantity"
-]
-alt_p = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt_procapnet.h5")[
+procapnet = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_folds.h5")[
     "quantity"
 ]
 
