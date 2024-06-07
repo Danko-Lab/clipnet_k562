@@ -13,21 +13,23 @@ import utils
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-models = [
-    procapnet.ProCapNet(glob.glob(f"models/procapnet_k562/fold_{i}/*.torch")[0]).cuda()
+models = [procapnet.ProCapNet() for i in range(7)]
+loaded_models = [
+    models[i].load_state_dict(torch.load(glob.glob(f"models/procapnet_k562/fold_{i}/*.torch")[0]))
     for i in range(7)
 ]
 
+
 ref_seqs = [rec.seq for rec in pyfastx.Fasta("data/mpra/k562_mpra_snps_2114_ref.fa.gz")]
 
-ref_ohe = np.array([utils.one_hot_encode(seq) for seq in ref_seqs]).swapaxes(1, 2)
+ref_ohe = np.array([utils.one_hot_encode(seq) for seq in tqdm.tqdm(ref_seqs)]).swapaxes(1, 2)
+#ref_pred = []
+#for model in tqdm.tqdm(models):
+#    ref_pred.append(predict(model, torch.tensor(ref_ohe).to(torch.float).cuda()))
+    
 ref_pred = []
 for model in tqdm.tqdm(models):
-    ref_pred.append(predict(model, torch.tensor(ref_ohe).to(torch.float).cuda()))
-    
-ref_self_pred = []
-for model in tqdm.tqdm(models):
-    ref_pred.append(model.predict(torch.tensor(ref_ohe).to(torch.float).cuda()))
+    ref_pred.append(predict(model, torch.tensor(ref_ohe).to(torch.float)))
 
 ref_quantity = [p[1][:, 0] for p in ref_pred]
 

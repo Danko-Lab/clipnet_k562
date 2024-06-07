@@ -1,8 +1,16 @@
+### Code here is modified from Jacob's Schreiber's
+### implementation of BPNet, called BPNet-lite:
+### https://github.com/jmschrei/bpnet-lite/
+
+
 import numpy as np
 import torch
 
+torch.backends.cudnn.benchmark = True
+
 
 class ProCapNet(torch.nn.Module):
+
     def __init__(self, n_filters=512, n_layers=8, n_outputs=2):
         super(ProCapNet, self).__init__()
         self.n_filters = n_filters
@@ -10,6 +18,7 @@ class ProCapNet(torch.nn.Module):
         self.n_outputs = n_outputs
         self.trimming = 557
         self.deconv_kernel_size = 75
+
         self.iconv = torch.nn.Conv1d(4, n_filters, kernel_size=21, padding=10)
         self.rconvs = torch.nn.ModuleList(
             [
@@ -22,6 +31,7 @@ class ProCapNet(torch.nn.Module):
         self.fconv = torch.nn.Conv1d(
             n_filters, n_outputs, kernel_size=self.deconv_kernel_size
         )
+
         self.relus = torch.nn.ModuleList(
             [torch.nn.ReLU() for _ in range(0, self.n_layers + 1)]
         )
@@ -29,32 +39,40 @@ class ProCapNet(torch.nn.Module):
 
     def forward(self, X):
         start, end = self.trimming, X.shape[2] - self.trimming
+
         X = self.relus[0](self.iconv(X))
         for i in range(self.n_layers):
             X_conv = self.relus[i + 1](self.rconvs[i](X))
             X = torch.add(X, X_conv)
+
         X = X[
             :,
             :,
             start - self.deconv_kernel_size // 2 : end + self.deconv_kernel_size // 2,
         ]
+
         y_profile = self.fconv(X)
+
         X = torch.mean(X, axis=2)
         y_counts = self.linear(X).reshape(X.shape[0], 1)
-        return y_profile, y_counts
+
+        return self.log_softmax(y_profile), y_counts
 
     def predict(self, X, batch_size=64, logits=False):
         with torch.no_grad():
             starts = np.arange(0, X.shape[0], batch_size)
             ends = starts + batch_size
+
             y_profiles, y_counts = [], []
             for start, end in zip(starts, ends):
                 X_batch = X[start:end]
+
                 y_profiles_, y_counts_ = self(X_batch)
                 if not logits:  # apply softmax
                     y_profiles_ = self.log_softmax(y_profiles_)
                 y_profiles.append(y_profiles_.cpu().detach().numpy())
                 y_counts.append(y_counts_.cpu().detach().numpy())
+
             y_profiles = np.concatenate(y_profiles)
             y_counts = np.concatenate(y_counts)
             return y_profiles, y_counts
@@ -69,3 +87,16 @@ class ProCapNet(torch.nn.Module):
 # model = ProCapNet()
 # model.load_state_dict(torch.load(model_path))
 # model.eval()
+
+# input should be a Tensor of shape (num_sequences, num_bases=4, sequence_length=2114)
+# sequences_to_predict = torch.zeros((1, 4, 2114))  # replace with your sequence(s)
+
+# On CPU:
+# predicted_profiles, predicted_logcounts = model.predict(sequences_to_predict)
+
+# On GPU instead:
+# model = model.cuda()
+# predicted_profiles, predicted_logcounts = model.predict(sequences_to_predict.cuda())
+
+# then, profile and counts tasks can be combined into a final prediction
+# model_predictions = np.exp(predicted_profiles) * np.exp(predicted_logcounts)
