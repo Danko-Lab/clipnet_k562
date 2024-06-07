@@ -8,6 +8,7 @@ import numpy as np
 
 import procapnet
 import utils
+from tangermeme.predict import predict
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -24,7 +25,7 @@ ref_seqs = (
 )
 ref_pred = []
 for model in tqdm.tqdm(models):
-    ref_pred.append(model.predict(torch.tensor(ref_seqs).to(torch.float).cuda()))
+    ref_pred.append(predict(model, torch.tensor(ref_seqs).to(torch.float).cuda()))
 
 ref_quantity = [p[1][:, 0] for p in ref_pred]
 

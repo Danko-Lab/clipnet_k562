@@ -11,6 +11,79 @@ import pyfaidx
 import tqdm
 
 
+def one_hot_encode(
+    sequence,
+    alphabet=["A", "C", "G", "T"],
+    dtype="int8",
+    desc=None,
+    verbose=False,
+    **kwargs,
+):
+    """Converts a string or list of characters into a one-hot encoding.
+
+    This function will take in either a string or a list and convert it into a
+    one-hot encoding. If the input is a string, each character is assumed to be
+    a different symbol, e.g. 'ACGT' is assumed to be a sequence of four
+    characters. If the input is a list, the elements can be any size.
+
+    Although this function will be used here primarily to convert nucleotide
+    sequences into one-hot encoding with an alphabet of size 4, in principle
+    this function can be used for any types of sequences.
+
+    Parameters
+    ----------
+    sequence : str or list
+        The sequence to convert to a one-hot encoding.
+
+    alphabet : set or tuple or list, optional
+        A pre-defined alphabet. If None is passed in, the alphabet will be
+        determined from the sequence, but this may be time consuming for
+        large sequences. Default is ACGT.
+
+    dtype : str or numpy.dtype, optional
+        The data type of the returned encoding. Default is int8.
+
+    desc : str or None, optional
+        The title to display in the progress bar.
+
+    verbose : bool or str, optional
+        Whether to display a progress bar. If a string is passed in, use as the
+        name of the progressbar. Default is False.
+
+    kwargs : arguments
+        Arguments to be passed into tqdm. Default is None.
+
+    Returns
+    -------
+    ohe : numpy.ndarray
+        A binary matrix of shape (alphabet_size, sequence_length) where
+        alphabet_size is the number of unique elements in the sequence and
+        sequence_length is the length of the input sequence.
+    """
+
+    # these characters will be encoded as all-zeros
+    ambiguous_nucs = ["Y", "R", "W", "S", "K", "M", "D", "V", "H", "B", "X", "N"]
+
+    d = verbose is False
+
+    sequence = sequence.upper()
+    if isinstance(sequence, str):
+        sequence = list(sequence)
+
+    alphabet = alphabet or np.unique(sequence)
+    alphabet_lookup = {char: i for i, char in enumerate(alphabet)}
+
+    ohe = np.zeros((len(sequence), len(alphabet)), dtype=dtype)
+    for i, char in tqdm(enumerate(sequence), disable=d, desc=desc, **kwargs):
+        if char in alphabet:
+            idx = alphabet_lookup[char]
+            ohe[i, idx] = 1
+        else:
+            assert char in ambiguous_nucs, char
+
+    return ohe
+
+
 class TwoHotDNA:
     """
     Allows you to access id, seq, and twohot(seq) as attributes. Handles IUPAC ambiguity
