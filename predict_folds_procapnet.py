@@ -14,7 +14,7 @@ import utils
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 models = [
-    procapnet.Model(glob.glob(f"models/procapnet_k562/fold_{i}/*.torch")[0]).cuda()
+    procapnet.ProCapNet(glob.glob(f"models/procapnet_k562/fold_{i}/*.torch")[0]).cuda()
     for i in range(7)
 ]
 
