@@ -141,12 +141,7 @@ def construct_reporter_seq(enhancer_seq, procapnet=False):
     )
     # Add procapnet sequence if needed
     if procapnet:
-        construct = "".join(
-            [
-                vector_seqs["procapnet"],
-                construct,
-            ]
-        )
+        construct = "".join([vector_seqs["procapnet"], construct])
         return construct
     # Trim off excess 3' sequence and return encoded sequence
     return construct[:1000]

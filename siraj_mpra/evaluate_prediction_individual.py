@@ -22,9 +22,13 @@ alt = [
     ][:, 0]
     for i in range(1, 10)
 ]
-procapnet = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_folds.h5")[
-    "quantity"
-]
+
+procapnet_ensemble = h5py.File(
+    "/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_ensemble.h5"
+)
+procapnet_folds = h5py.File(
+    "/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_folds.h5"
+)
 
 mpra = pd.read_csv("media-4-K562_allelic_mpra.tsv.gz", sep="\t")
 snps = pd.read_csv("media-3_oligos_snps.tsv.gz", sep="\t")
@@ -57,18 +61,24 @@ pred = pd.DataFrame(
         "fold": folds,
         "ref": ref_pred,
         "alt": alt_pred,
-        "ref_p": ref_p,
-        "alt_p": alt_p,
+        "ref_procapnet_ensemble": procapnet_ensemble["ref"],
+        "alt_procapnet_ensemble": procapnet_ensemble["alt"],
         "variant": snps["Variant"],
     }
 )
+
+for i in range(7):
+    pred[f"ref_procapnet_fold_{i}"] = procapnet_folds["ref"][i]
+    pred[f"alt_procapnet_fold_{i}"] = procapnet_folds["alt"][i]
 
 data = pred.merge(mpra, left_on="variant", right_on="variant")
 data["expt"] = np.log2(
     (data["mean_RNA_ref_K562"] / data["mean_Plasmid_ref_K562"])
     / (data["mean_RNA_alt_K562"] / data["mean_Plasmid_alt_K562"])
 )
-data.to_csv("/home2/ayh8/clipnet_k562/data/mpra/k562_allelic_mpra_snps.csv.gz", index=False)
+data.to_csv(
+    "/home2/ayh8/clipnet_k562/data/mpra/k562_allelic_mpra_snps.csv.gz", index=False
+)
 
 data["pred"] = np.log2(data["ref"] / data["alt"])
 data["pred_p"] = np.log2(data["ref_p"] / data["alt_p"])
