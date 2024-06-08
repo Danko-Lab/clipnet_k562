@@ -23,9 +23,6 @@ alt = [
     for i in range(1, 10)
 ]
 
-procapnet_ensemble = h5py.File(
-    "/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_ensemble.h5"
-)
 procapnet_folds = h5py.File(
     "/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_folds.h5"
 )
@@ -61,8 +58,8 @@ pred = pd.DataFrame(
         "fold": folds,
         "ref": ref_pred,
         "alt": alt_pred,
-        "ref_procapnet_ensemble": procapnet_ensemble["ref"],
-        "alt_procapnet_ensemble": procapnet_ensemble["alt"],
+        "ref_procapnet_ensemble": procapnet_folds["ref"][:].mean(axis=0),
+        "alt_procapnet_ensemble": procapnet_folds["alt"][:].mean(axis=0),
         "variant": snps["Variant"],
     }
 )
@@ -81,7 +78,7 @@ data.to_csv(
 )
 
 data["pred"] = np.log2(data["ref"] / data["alt"])
-data["pred_p"] = np.log2(data["ref_p"] / data["alt_p"])
+data["pred_p"] = np.log2(data["ref_procapnet_ensemble"] / data["alt_procapnet_ensemble"])
 data = data[np.isfinite(data["pred"])]
 data.dropna(inplace=True)
 
