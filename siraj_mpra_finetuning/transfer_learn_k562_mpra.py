@@ -53,11 +53,12 @@ outdir = Path(f"../models/clipnet_k562_mpra/f{fold}/")
 ref_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
+for layer in ref_model.layers:
+    layer._name = layer.name + str("_ref")
+
 alt_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
-for layer in ref_model.layers:
-    layer._name = layer.name + str("_ref")
 for layer in alt_model.layers:
     layer._name = layer.name + str("_alt")
 
@@ -87,7 +88,7 @@ csv_logger = CSVLogger(
 )
 
 # Fit the model
-fit_model = mpra_net.fit_generator(
+fit_model = mpra_net.fit(
     x=train_gen,
     validation_data=val_gen,
     epochs=rnn_v10.epochs,
