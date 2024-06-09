@@ -104,10 +104,10 @@ class MPRAGen(Sequence):
             y = -y
         if self.max_jitter > 0:
             jitter = random.randint(0, self.max_jitter)
-            X = [x[:, jitter : self.in_window + jitter, :] for x in X]
+            X = np.array([x[:, jitter : self.in_window + jitter, :] for x in X])
         else:
-            X = [x[:, self.trim : x.shape[1] - self.trim, :] for x in X]
-        X = (tf.convert_to_tensor(x.copy(), dtype=tf.float32) for x in X)
+            X = np.array([x[:, self.trim : x.shape[1] - self.trim, :] for x in X])
+        X = tf.convert_to_tensor(X.copy(), dtype=tf.float32)
         y = tf.convert_to_tensor(y.copy(), dtype=tf.float32)
         return X, y
 
