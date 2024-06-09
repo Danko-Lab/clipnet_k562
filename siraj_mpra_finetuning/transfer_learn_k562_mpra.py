@@ -6,7 +6,6 @@ from pathlib import Path
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
-import tensorflow_addons as tfa
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
 
@@ -21,6 +20,19 @@ gpu = int(sys.argv[2])
 
 # Specify GPU usage
 nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
+
+
+def corr(x, y, pseudocount=1e-6):
+    """
+    Computes Pearson's r between x and y. Pseudocount ensures non-zero denominator.
+    """
+    mx = tf.math.reduce_mean(x)
+    my = tf.math.reduce_mean(y)
+    xm, ym = x - mx, y - my
+    num = tf.math.reduce_mean(tf.multiply(xm, ym))
+    den = tf.math.reduce_std(xm) * tf.math.reduce_std(ym) + pseudocount
+    r = tf.math.maximum(tf.math.minimum(num / den, 1), -1)
+    return r
 
 
 def warmup_lr(epoch, lr):
@@ -61,7 +73,7 @@ tf.keras.backend.clear_session()
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
     loss="mse",
-    metrics=["mae", tfa.metrics.PearsonsCorrelation()],
+    metrics=["mae", corr],
 )
 for layer in mpra_net.layers:
     if isinstance(layer, tf.keras.layers.BatchNormalization):
