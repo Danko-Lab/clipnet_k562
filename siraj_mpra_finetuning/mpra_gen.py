@@ -35,7 +35,7 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
         utils.get_twohot_from_series(data["ref_seq"], cores=cores),
         utils.get_twohot_from_series(data["alt_seq"], cores=cores),
     ]
-    y = np.log(
+    y = np.log1p(
         (data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562)
         / (data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562)
     ).to_numpy()

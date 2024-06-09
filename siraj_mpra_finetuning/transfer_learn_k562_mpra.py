@@ -64,7 +64,7 @@ for layer in alt_model.layers:
     layer._name = layer.name + str("_alt")
 
 # Create a new model that outputs the log2 fold change
-logfc = tf.math.log((ref_model.output[1]) / (alt_model.output[1]))
+logfc = tf.math.log1p((ref_model.output[1]) / (alt_model.output[1]))
 mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=logfc)
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
