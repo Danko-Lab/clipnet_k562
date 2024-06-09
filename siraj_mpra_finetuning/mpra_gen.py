@@ -43,7 +43,7 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
             np.log(data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562),
             np.log(data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562),
         ]
-    ).to_numpy()
+    )
     if reverse_complement:
         X = [utils.rc_twohot_het(x) for x in X]
     # output datasets
