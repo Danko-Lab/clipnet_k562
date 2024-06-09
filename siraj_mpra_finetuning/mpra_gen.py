@@ -108,7 +108,7 @@ class MPRAGen(Sequence):
             jitter = random.randint(0, self.max_jitter)
             X = X[:, jitter : self.in_window + jitter, :]
         else:
-            X = X[:, self.trim : x.shape[1] - self.trim, :]
+            X = X[:, self.trim : X.shape[1] - self.trim, :]
         X = tf.convert_to_tensor(X.copy(), dtype=tf.float32)
         y = tf.convert_to_tensor(y.copy(), dtype=tf.float32)
         return X, y
