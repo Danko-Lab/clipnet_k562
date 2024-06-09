@@ -31,13 +31,16 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
     # Filter data to only include the specified folds
     data = data[data["fold"].isin(folds)]
     # print(include[0])
-    X = [
-        utils.get_twohot_from_series(data["ref_seq"], cores=cores),
-        utils.get_twohot_from_series(data["alt_seq"], cores=cores),
-    ]
-    y = (
-        np.log((data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562) + 1e-3)
-        - np.log((data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562) + 1e-3)
+    X = np.concatenate(
+        [
+            utils.get_twohot_from_series(data["ref_seq"], cores=cores),
+            utils.get_twohot_from_series(data["alt_seq"], cores=cores),
+        ],
+        axis=0,
+    )
+    y = np.concatenate(
+        np.log(data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562),
+        np.log(data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562),
     ).to_numpy()
     if reverse_complement:
         X = [utils.rc_twohot_het(x) for x in X]
@@ -95,19 +98,16 @@ class MPRAGen(Sequence):
         batch_indices = self.index[
             index * self.batch_size : (index + 1) * self.batch_size
         ]
-        X = [x[batch_indices, :, :] for x in self.X]
+        X = self.X[batch_indices, :, :]
         y = self.y[batch_indices]
         if self.rc_augmentation and random.random() > 0.5:
-            X = [x[:, ::-1, ::-1] for x in X]
-        if self.swap_alleles and random.random() > 0.5:
-            X = [X[1], X[0]]
-            y = -y
+            X = X[:, ::-1, ::-1]
         if self.max_jitter > 0:
             jitter = random.randint(0, self.max_jitter)
-            X = [x[:, jitter : self.in_window + jitter, :] for x in X]
+            X = X[:, jitter : self.in_window + jitter, :]
         else:
-            X = [x[:, self.trim : x.shape[1] - self.trim, :] for x in X]
-        X = [tf.convert_to_tensor(x.copy(), dtype=tf.float32) for x in X]
+            X = X[:, self.trim : x.shape[1] - self.trim, :]
+        X = tf.convert_to_tensor(X.copy(), dtype=tf.float32)
         y = tf.convert_to_tensor(y.copy(), dtype=tf.float32)
         return X, y
 

@@ -6,6 +6,7 @@ from pathlib import Path
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
+import tensorflow_addons as tfa
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
 
@@ -50,28 +51,17 @@ val_gen = mpra_gen.MPRAGen(*val_args)
 # Load the reference and alternative models
 outdir = Path(f"../models/clipnet_k562_mpra/f{fold}/")
 
-ref_model = tf.keras.models.load_model(
+base_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
-for layer in ref_model.layers:
-    layer._name = layer.name + str("_ref")
-
-alt_model = tf.keras.models.load_model(
-    f"../models/clipnet_k562/fold_{fold}.h5", compile=False
-)
-for layer in alt_model.layers:
-    layer._name = layer.name + str("_alt")
 
 # Create a new model that outputs the log2 fold change
-logfc = tf.math.log(ref_model.output[1] + 1e-3) - tf.math.log(
-    alt_model.output[1] + 1e-3
-)
-mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=logfc)
+mpra_net = tf.keras.Model(inputs=base_model.input, outputs=base_model.output[1])
 tf.keras.backend.clear_session()
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
     loss="mse",
-    metrics="mae",
+    metrics=["mae", tfa.metrics.PearsonsCorrelation()],
 )
 for layer in mpra_net.layers:
     if isinstance(layer, tf.keras.layers.BatchNormalization):
