@@ -38,7 +38,8 @@ def warmup_lr(epoch, lr):
 # Create data loaders for training and validation
 data_fp = "../data/mpra/processed_k562_mpra_data_clipnet_ft.csv.gz"
 
-train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
+train_folds = [fold]
+#train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
 val_folds = [fold % 9 + 1]
 print(f"Training on folds {train_folds} and validating on fold {val_folds}.")
 
