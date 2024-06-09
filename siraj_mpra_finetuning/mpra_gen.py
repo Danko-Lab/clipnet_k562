@@ -27,7 +27,7 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
     """
     # load data and check dimensions
     print(f"Loading data from {data_fp}.")
-    data = pd.read_csv(data_fp)
+    data = pd.read_csv(data_fp).dropna()
     # Filter data to only include the specified folds
     data = data[data["fold"].isin(folds)]
     # print(include[0])
@@ -35,10 +35,11 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
         utils.get_twohot_from_series(data["ref_seq"], cores=cores),
         utils.get_twohot_from_series(data["alt_seq"], cores=cores),
     ]
-    y = np.log1p(
+    y = np.log(
         (data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562)
         / (data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562)
     ).to_numpy()
+
     if reverse_complement:
         X = [utils.rc_twohot_het(x) for x in X]
     # output datasets
