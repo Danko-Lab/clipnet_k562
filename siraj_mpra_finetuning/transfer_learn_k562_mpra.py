@@ -14,8 +14,8 @@ import clipnet
 import mpra_gen
 import rnn_v10
 
-fold = 1  # fold = int(sys.argv[1])
-gpu = 0  # gpu = int(sys.argv[2])
+fold = int(sys.argv[1])
+gpu = int(sys.argv[2])
 
 
 # Specify GPU usage
