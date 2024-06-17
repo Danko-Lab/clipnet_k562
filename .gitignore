@@ -5,6 +5,7 @@
 */*.model
 */*/*.model
 data/*/*.fa.gz*
+siraj_mpra/k562_allelic_mpra_snps.csv.gz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
