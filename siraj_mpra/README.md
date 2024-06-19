@@ -64,14 +64,11 @@ done
 ```bash
 conda activate procapnet
 
-cd ../
 python predict_ensemble_procapnet.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.fa.gz \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.h5 \
     --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
     --gpu 0
-
-python predict_
 ```
 
 ## Calculate performance metrics
@@ -81,5 +78,58 @@ python calculate_performance_metrics.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.h5 \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_procapnet.npz \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_performance.h5
+```
 
+## Split out data fold 0
+
+```python
+import pandas as pd
+import pyfastx
+import tqdm
+
+data_folds = pd.read_csv("clipnet_data_fold_assignments.csv")
+df = pd.read_csv("../data/mpra/k562_allelic_mpra_snps.csv.gz")
+ref_fasta = pyfastx.Fasta("../data/mpra/k562_mpra_snps_ref.fa.gz")
+alt_fasta = pyfastx.Fasta("../data/mpra/k562_mpra_snps_alt.fa.gz")
+
+seq_df = pd.DataFrame(
+    {
+        "variant": [x.name.split("_")[0] for x in ref_fasta],
+        "ref_seq": [x.seq for x in ref_fasta],
+        "alt_seq": [x.seq for x in alt_fasta],
+    }
+)
+
+test_df = df[df["fold"] == 0]
+merged_df = seq_df.merge(test_df, on="variant")
+
+test_ref_fasta_fp = "../data/mpra/k562_mpra_snps_ref_fold0.fa"
+with open(test_ref_fasta_fp, "w") as f:
+    for i, row in tqdm.tqdm(merged_df.iterrows(), total=len(merged_df)):
+        f.write(f">{row['variant']}_ref\n{row['ref_seq']}\n")
+
+
+test_alt_fasta_fp = "../data/mpra/k562_mpra_snps_alt_fold0.fa"
+with open(test_alt_fasta_fp, "w") as f:
+    for i, row in tqdm.tqdm(merged_df.iterrows(), total=len(merged_df)):
+        f.write(f">{row['variant']}_alt\n{row['alt_seq']}\n")
+
+test_df.to_csv("../data/mprak562_mpra_snps_fold0.csv.gz", index=False)
+```
+
+## Run DeepSHAP
+
+```bash
+conda activate clipnet
+
+cd /home2/ayh8/clipnet/
+allele=alt
+mode=profile
+python calculate_deepshap.py \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0.fa \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_deepshap_${mode}.npz \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_ohe.npz \
+    --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
+    --mode $mode \
+    --gpu 0
 ```
