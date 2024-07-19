@@ -1,4 +1,5 @@
 import argparse
+import glob
 import sys
 
 import numpy as np
@@ -61,7 +62,9 @@ def save_deepshap_results(onehot_seqs, scores, scores_path, onehot_seqs_path=Non
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("model_path", type=str, help="Path to model to score")
+    parser.add_argument(
+        "model_dir", type=str, help="Path to directory with model to score"
+    )
     parser.add_argument(
         "fasta_path", type=str, help="Path to fasta file with sequences to score"
     )
@@ -97,7 +100,8 @@ def main():
     )
 
     # Load model
-    model = torch.load(args.model_path)
+    model_path = glob.glob(f"{args.model_dir}/*.torch")[0]
+    model = torch.load(model_path)
     if args.gpu is not None:
         model = model.cuda()
 
