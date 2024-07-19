@@ -107,9 +107,13 @@ def main():
     model_path = glob.glob(f"{args.model_dir}/*.torch")[0]
     if args.mode == "profile":
         raise NotImplementedError("Profile mode not implemented")
-        model = ProfileWrapper(torch.load(model_path))
+        loader = torch.load(model_path)
+        loader.load_state_dict(torch.load(model_path))
+        model = ProfileWrapper(loader)
     elif args.mode == "counts":
-        model = CountsWrapper(torch.load(model_path))
+        loader = torch.load(model_path)
+        loader.load_state_dict(torch.load(model_path))
+        model = CountsWrapper(loader)
     else:
         raise ValueError(f"Mode {args.mode} not recognized")
     if args.gpu is not None:
