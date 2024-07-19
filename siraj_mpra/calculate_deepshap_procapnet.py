@@ -105,14 +105,12 @@ def main():
 
     # Load model
     model_path = glob.glob(f"{args.model_dir}/*.torch")[0]
+    loader = torch.nn.Model()
+    loader.load_state_dict(torch.load(model_path))
     if args.mode == "profile":
         raise NotImplementedError("Profile mode not implemented")
-        loader = torch.Model()
-        loader.load_state_dict(torch.load(model_path))
         model = ProfileWrapper(loader)
     elif args.mode == "counts":
-        loader = torch.Model()
-        loader.load_state_dict(torch.load(model_path))
         model = CountsWrapper(loader)
     else:
         raise ValueError(f"Mode {args.mode} not recognized")
