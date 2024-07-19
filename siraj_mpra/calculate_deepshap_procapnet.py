@@ -101,7 +101,7 @@ def main():
 
     # Load model
     model_path = glob.glob(f"{args.model_dir}/*.torch")[0]
-    model = torch.load(model_path)
+    model = CountsWrapper(torch.load(model_path))
     if args.gpu is not None:
         model = model.cuda()
 
