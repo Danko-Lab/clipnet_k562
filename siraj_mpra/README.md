@@ -139,12 +139,13 @@ python calculate_deepshap.py \
 ```bash
 conda activate procapnet
 
-allele=ref
+cd /home2/ayh8/clipnet_k562/siraj_mpra
+allele=alt
 mode=quantity
 python calculate_deepshap_procapnet.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0.fa \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_procapnet_deepshap_${mode}.npz \
     --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
     --mode $mode \
-    --gpu 0
+    --gpu 1
 ```

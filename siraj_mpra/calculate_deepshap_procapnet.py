@@ -1,9 +1,11 @@
 import argparse
+import sys
 
 import numpy as np
 import torch
 from tangermeme.deep_lift_shap import deep_lift_shap
 
+sys.path.append("../")
 import utils
 
 
