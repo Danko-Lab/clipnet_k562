@@ -6,82 +6,11 @@ import gzip
 import os
 import re
 
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
-import pyfaidx
+import pyfastx
 import tqdm
-
-
-def one_hot_encode(
-    sequence,
-    alphabet=["A", "C", "G", "T"],
-    dtype="int8",
-    desc=None,
-    verbose=False,
-    **kwargs,
-):
-    """Converts a string or list of characters into a one-hot encoding.
-
-    This function will take in either a string or a list and convert it into a
-    one-hot encoding. If the input is a string, each character is assumed to be
-    a different symbol, e.g. 'ACGT' is assumed to be a sequence of four
-    characters. If the input is a list, the elements can be any size.
-
-    Although this function will be used here primarily to convert nucleotide
-    sequences into one-hot encoding with an alphabet of size 4, in principle
-    this function can be used for any types of sequences.
-
-    Parameters
-    ----------
-    sequence : str or list
-        The sequence to convert to a one-hot encoding.
-
-    alphabet : set or tuple or list, optional
-        A pre-defined alphabet. If None is passed in, the alphabet will be
-        determined from the sequence, but this may be time consuming for
-        large sequences. Default is ACGT.
-
-    dtype : str or numpy.dtype, optional
-        The data type of the returned encoding. Default is int8.
-
-    desc : str or None, optional
-        The title to display in the progress bar.
-
-    verbose : bool or str, optional
-        Whether to display a progress bar. If a string is passed in, use as the
-        name of the progressbar. Default is False.
-
-    kwargs : arguments
-        Arguments to be passed into tqdm. Default is None.
-
-    Returns
-    -------
-    ohe : numpy.ndarray
-        A binary matrix of shape (alphabet_size, sequence_length) where
-        alphabet_size is the number of unique elements in the sequence and
-        sequence_length is the length of the input sequence.
-    """
-
-    # these characters will be encoded as all-zeros
-    ambiguous_nucs = ["Y", "R", "W", "S", "K", "M", "D", "V", "H", "B", "X", "N"]
-
-    d = verbose is False
-
-    sequence = sequence.upper()
-    if isinstance(sequence, str):
-        sequence = list(sequence)
-
-    alphabet = alphabet or np.unique(sequence)
-    alphabet_lookup = {char: i for i, char in enumerate(alphabet)}
-
-    ohe = np.zeros((len(sequence), len(alphabet)), dtype=dtype)
-    for i, char in tqdm.tqdm(enumerate(sequence), disable=d, desc=desc, **kwargs):
-        if char in alphabet:
-            idx = alphabet_lookup[char]
-            ohe[i, idx] = 1
-        else:
-            assert char in ambiguous_nucs, char
-
-    return ohe
 
 
 class TwoHotDNA:
@@ -152,6 +81,33 @@ def get_twohot(seq):
     return TwoHotDNA(seq).twohot
 
 
+def get_twohot_from_series(series, cores=8, desc="Twohot encoding", silence=False):
+    """Extracts just the twohot encoding from TwoHotDNA.
+
+    Given a pandas series of sequences, returns an twohot-encoded array (n, len, 4)
+    array of all sequences.
+    """
+    if cores > 1:
+        # Use multiprocessing to parallelize twohot encoding
+        import multiprocessing as mp
+
+        pool = mp.Pool(min(cores, mp.cpu_count()))
+        twohot_encoded = list(
+            tqdm.tqdm(
+                pool.imap(get_twohot, series.to_list()),
+                total=len(series),
+                desc=desc,
+                disable=silence,
+            )
+        )
+    else:
+        twohot_encoded = [
+            get_twohot(seq)
+            for seq in tqdm.tqdm(series.to_list(), desc=desc, disable=silence)
+        ]
+    return np.array(twohot_encoded)
+
+
 def gz_read(fp):
     """Handles opening gzipped or non-gzipped files to read mode."""
     ext = os.path.splitext(fp)[-1]
@@ -211,9 +167,9 @@ def get_twohot_fasta_sequences(
     Given a fasta file with each record, returns an twohot-encoded array (n, len, 4)
     array of all sequences.
     """
-    fa = pyfaidx.Fasta(fasta_fp)
+    fa = pyfastx.Fasta(fasta_fp)
     seqs = [
-        rec[:].seq
+        rec.seq
         for rec in tqdm.tqdm(
             fa, desc="Reading sequences", disable=silence, total=len(fa)
         )
@@ -233,6 +189,29 @@ def get_twohot_fasta_sequences(
             TwoHotDNA(seq).twohot for seq in tqdm.tqdm(seqs, desc=desc, disable=silence)
         ]
     return np.array(twohot_encoded)
+
+
+def get_consensus_region(bed_intervals, consensus_fp):
+    """
+    Given a list of bed intervals and a consensus.fna file path, get list of sequences
+    as strings.
+    """
+    sequences = []
+    fna = pyfastx.Fasta(consensus_fp)
+    for interval in bed_intervals:
+        # Recall that pyfastx uses 1 based [) half open encoding.
+        sequences.append(fna.fetch(interval.chrom, (interval.start + 1, interval.stop)))
+    return sequences
+
+
+def get_consensus_twohot(bed_intervals, consensus_fp):
+    """
+    Given a list of bed intervals and a consensus.fna file path, return a list of
+    twohot encodings.
+    """
+    sequences = get_consensus_region(bed_intervals, consensus_fp)
+    twohot_list = [TwoHotDNA(sequence).twohot for sequence in sequences]
+    return twohot_list
 
 
 def rc_twohot_het(arr):
@@ -265,22 +244,14 @@ def slice_procap(procap, pad):
         return procap[:, slc]
 
 
-def check_dimensions(seq, procap, dnase=None):
-    """Check that dimensions are correct. DNase will be ignored if it is None."""
-    assert (
-        seq.shape[0] == procap.shape[0]
-    ), f"n_samples: seq={seq.shape[0]}, procap={procap.shape[0]}."
-    assert (
-        seq.shape[1] == procap.shape[1] / 2
-    ), f"len(windows): seq={seq.shape[1]}, procap={procap.shape[1]}."
-    if dnase is not None:
-        assert (
-            seq.shape[0] == dnase.shape[0]
-        ), f"n_samples: seq,procap={seq.shape[0]}, dnase={dnase.shape[0]}"
-        assert (
-            seq.shape[1] == dnase.shape[1] == procap.shape[1] / 2
-        ), f"len(windows): seq,procap={seq.shape[1]}, dnase={dnase.shape[1]}"
-    assert seq.shape[2] == 4, "seq dummy variables = %d." % seq.shape[2]
+def check_dimensions(seq, procap):
+    """Check that dimensions are correct."""
+    if seq.shape[0] != procap.shape[0]:
+        raise ValueError(f"n_samples: seq={seq.shape[0]}, procap={procap.shape[0]}.")
+    if seq.shape[1] != procap.shape[1] / 2:
+        raise ValueError(f"len(windows): seq={seq.shape[1]}, procap={procap.shape[1]}.")
+    if seq.shape[2] != 4:
+        raise ValueError(f"seq dummy variables = {seq.shape[2]}.")
 
 
 # The following functions are adapted from DeepLIFT and https://alextseng.net/blog/posts/20201122-kmer-shuffles/:
@@ -299,7 +270,8 @@ def char_array_to_string(arr):
     Converts a NumPy array of byte-long ASCII codes into an ASCII string.
     e.g. [65, 67, 71, 84] becomes "ACGT".
     """
-    assert arr.dtype == np.int8
+    if arr.dtype != np.int8:
+        raise ValueError("Array must be of type np.int8")
     return arr.tostring().decode("ascii")
 
 
@@ -413,3 +385,329 @@ def save_dict_to_hdf5(file, group, data, compression="gzip"):
             file.create_dataset(
                 f"{group.name}/{key}", data=value, compression=compression
             )
+
+
+def l2_score(x, y):
+    return np.sqrt(np.sum(np.square(x - y), axis=1))
+
+
+def plot_side(arr, ylim=[-2, 2.5], yticks=[0, 2], xticks=[], pic_name=None):
+    """
+    Adapted from APARENT code (Bogard et al. 2019)
+    """
+    if arr.shape[0] % 2 != 0:
+        raise ValueError("arr must have even length.")
+    midpoint = int(arr.shape[0] / 2)
+    pl = arr[:midpoint]
+    mn = arr[midpoint:]
+    plt.bar(
+        range(pl.shape[0]),
+        pl,
+        width=-2,
+        color="r",
+    )
+    plt.bar(range(mn.shape[0]), -mn, width=-2, color="b")
+    axes = plt.gca()
+    axes.set_ylim(ylim)
+    axes.set_yticks(yticks)
+    axes.set_xticks(xticks)
+    axes.spines[["right", "top", "bottom"]].set_visible(False)
+    plt.xlim(-0.5, pl.shape[0] - 0.5)
+    axes.tick_params(labelleft=False)
+
+    if pic_name is None:
+        plt.show()
+    else:
+        plt.savefig(pic_name, transparent=True)
+        plt.close()
+
+
+def plot_side_stacked(
+    arr0, arr1, ylim=[-1, 1], yticks=[0, 1], xticks=[], pic_name=None
+):
+    if arr.shape[0] % 2 != 0:
+        raise ValueError("arr must have even length.")
+    midpoint = int(arr0.shape[0] / 2)
+    pl0 = arr0[:midpoint]
+    mn0 = arr0[midpoint:]
+    pl1 = arr1[:midpoint]
+    mn1 = arr1[midpoint:]
+    plt.bar(range(pl0.shape[0]), pl0, width=2, color="tomato", alpha=0.5)
+    plt.bar(range(mn0.shape[0]), -mn0, width=2, color="tomato", alpha=0.5)
+    plt.bar(range(pl1.shape[0]), pl1, width=2, color="grey", alpha=0.5)
+    plt.bar(range(mn1.shape[0]), -mn1, width=2, color="grey", alpha=0.5)
+    axes = plt.gca()
+    axes.set_ylim(ylim)
+    axes.set_yticks(yticks)
+    axes.set_xticks(xticks)
+    axes.spines[["right", "top", "bottom"]].set_visible(False)
+    plt.xlim(-0.5, pl0.shape[0] - 0.5)
+
+    if pic_name is None:
+        plt.show()
+    else:
+        plt.savefig(pic_name, transparent=True)
+        plt.close()
+
+
+def plot_a(ax, base, left_edge, height, color):
+    """
+    Adapted from DeepLIFT visualization code (Shrikumar et al. 2017)
+    """
+    a_polygon_coords = [
+        np.array(
+            [
+                [0.0, 0.0],
+                [0.5, 1.0],
+                [0.5, 0.8],
+                [0.2, 0.0],
+            ]
+        ),
+        np.array(
+            [
+                [1.0, 0.0],
+                [0.5, 1.0],
+                [0.5, 0.8],
+                [0.8, 0.0],
+            ]
+        ),
+        np.array(
+            [
+                [0.225, 0.45],
+                [0.775, 0.45],
+                [0.85, 0.3],
+                [0.15, 0.3],
+            ]
+        ),
+    ]
+    for polygon_coords in a_polygon_coords:
+        ax.add_patch(
+            matplotlib.patches.Polygon(
+                (
+                    np.array([1, height])[None, :] * polygon_coords
+                    + np.array([left_edge, base])[None, :]
+                ),
+                facecolor=color,
+                edgecolor=color,
+            )
+        )
+
+
+def plot_c(ax, base, left_edge, height, color):
+    """
+    Adapted from DeepLIFT visualization code (Shrikumar et al. 2017)
+    """
+    ax.add_patch(
+        matplotlib.patches.Ellipse(
+            xy=[left_edge + 0.65, base + 0.5 * height],
+            width=1.3,
+            height=height,
+            facecolor=color,
+            edgecolor=color,
+        )
+    )
+    ax.add_patch(
+        matplotlib.patches.Ellipse(
+            xy=[left_edge + 0.65, base + 0.5 * height],
+            width=0.7 * 1.3,
+            height=0.7 * height,
+            facecolor="white",
+            edgecolor="white",
+        )
+    )
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            xy=[left_edge + 1, base],
+            width=1.0,
+            height=height,
+            facecolor="white",
+            edgecolor="white",
+            fill=True,
+        )
+    )
+
+
+def plot_g(ax, base, left_edge, height, color):
+    """
+    Adapted from DeepLIFT visualization code (Shrikumar et al. 2017)
+    """
+    ax.add_patch(
+        matplotlib.patches.Ellipse(
+            xy=[left_edge + 0.65, base + 0.5 * height],
+            width=1.3,
+            height=height,
+            facecolor=color,
+            edgecolor=color,
+        )
+    )
+    ax.add_patch(
+        matplotlib.patches.Ellipse(
+            xy=[left_edge + 0.65, base + 0.5 * height],
+            width=0.7 * 1.3,
+            height=0.7 * height,
+            facecolor="white",
+            edgecolor="white",
+        )
+    )
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            xy=[left_edge + 1, base],
+            width=1.0,
+            height=height,
+            facecolor="white",
+            edgecolor="white",
+            fill=True,
+        )
+    )
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            xy=[left_edge + 0.825, base + 0.085 * height],
+            width=0.174,
+            height=0.415 * height,
+            facecolor=color,
+            edgecolor=color,
+            fill=True,
+        )
+    )
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            xy=[left_edge + 0.625, base + 0.35 * height],
+            width=0.374,
+            height=0.15 * height,
+            facecolor=color,
+            edgecolor=color,
+            fill=True,
+        )
+    )
+
+
+def plot_t(ax, base, left_edge, height, color):
+    """
+    Adapted from DeepLIFT visualization code (Shrikumar et al. 2017)
+    """
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            xy=[left_edge + 0.4, base],
+            width=0.2,
+            height=height,
+            facecolor=color,
+            edgecolor=color,
+            fill=True,
+        )
+    )
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            xy=[left_edge, base + 0.8 * height],
+            width=1.0,
+            height=0.2 * height,
+            facecolor=color,
+            edgecolor=color,
+            fill=True,
+        )
+    )
+
+
+default_colors = {0: "green", 1: "blue", 2: "orange", 3: "red"}
+default_plot_funcs = {0: plot_a, 1: plot_c, 2: plot_g, 3: plot_t}
+
+
+def plot_weights_given_ax(
+    ax,
+    array,
+    pos_height,
+    neg_height,
+    length_padding,
+    subticks_frequency,
+    highlight,
+    colors=default_colors,
+    plot_funcs=default_plot_funcs,
+):
+    """
+    Adapted from DeepLIFT visualization code (Shrikumar et al. 2017)
+    """
+    if len(array.shape) == 3:
+        array = np.squeeze(array)
+    if array.shape[0] % 2 != 0:
+        raise ValueError("arr must have even length.")
+    if array.shape[0] == 4 and array.shape[1] != 4:
+        array = array.transpose(1, 0)
+    if array.shape[1] % 4 != 0:
+        raise ValueError("Incorrect number of nucleotide dummy variables.")
+    max_pos_height = 0.0
+    min_neg_height = 0.0
+    heights_at_positions = []
+    depths_at_positions = []
+    for i in range(array.shape[0]):
+        # sort from smallest to highest magnitude
+        acgt_vals = sorted(enumerate(array[i, :]), key=lambda x: abs(x[1]))
+        positive_height_so_far = 0.0
+        negative_height_so_far = 0.0
+        for letter in acgt_vals:
+            plot_func = plot_funcs[letter[0]]
+            color = colors[letter[0]]
+            if letter[1] > 0:
+                height_so_far = positive_height_so_far
+                positive_height_so_far += letter[1]
+            else:
+                height_so_far = negative_height_so_far
+                negative_height_so_far += letter[1]
+            plot_func(
+                ax=ax, base=height_so_far, left_edge=i, height=letter[1], color=color
+            )
+        max_pos_height = max(max_pos_height, positive_height_so_far)
+        min_neg_height = min(min_neg_height, negative_height_so_far)
+        heights_at_positions.append(positive_height_so_far)
+        depths_at_positions.append(negative_height_so_far)
+
+    # now highlight any desired positions; the key of
+    # the highlight dict should be the color
+    for color in highlight:
+        for start_pos, end_pos in highlight[color]:
+            if start_pos < 0.0 or end_pos > array.shape[0]:
+                raise ValueError(
+                    "Highlight positions must be within the bounds of the sequence."
+                )
+            min_depth = np.min(depths_at_positions[start_pos:end_pos])
+            max_height = np.max(heights_at_positions[start_pos:end_pos])
+            ax.add_patch(
+                matplotlib.patches.Rectangle(
+                    xy=[start_pos, min_depth],
+                    width=end_pos - start_pos,
+                    height=max_height - min_depth,
+                    edgecolor=color,
+                    fill=False,
+                )
+            )
+
+    ax.set_xlim(-length_padding, array.shape[0] + length_padding)
+    ax.xaxis.set_ticks(np.arange(0.0, array.shape[0] + 1, subticks_frequency))
+    ax.set_ylim(neg_height, pos_height)
+
+
+def plot_weights(
+    array,
+    figsize=(20, 2),
+    pos_height=1.0,
+    neg_height=-1.0,
+    length_padding=1.0,
+    subticks_frequency=1.0,
+    colors=default_colors,
+    plot_funcs=default_plot_funcs,
+    highlight={},
+):
+    """
+    Adapted from DeepLIFT visualization code (Shrikumar et al. 2017)
+    """
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111)
+    plot_weights_given_ax(
+        ax=ax,
+        array=array,
+        pos_height=pos_height,
+        neg_height=neg_height,
+        length_padding=length_padding,
+        subticks_frequency=subticks_frequency,
+        colors=colors,
+        plot_funcs=plot_funcs,
+        highlight=highlight,
+    )

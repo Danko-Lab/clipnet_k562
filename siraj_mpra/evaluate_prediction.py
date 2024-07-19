@@ -9,12 +9,12 @@ ref = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.h5")["qua
 alt = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.h5")["quantity"][
     :, 0
 ]
-ref_p = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_procapnet.h5")[
-    "quantity"
-]
-alt_p = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt_procapnet.h5")[
-    "quantity"
-]
+ref_p = h5py.File(
+    "/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_folds.h5"
+)["ref"][:].mean(axis=0)
+alt_p = h5py.File(
+    "/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_procapnet_folds.h5"
+)["alt"][:].mean(axis=0)
 
 mpra = pd.read_csv("media-4-K562_allelic_mpra.tsv.gz", sep="\t")
 snps = pd.read_csv("media-3_oligos_snps.tsv.gz", sep="\t")
@@ -31,7 +31,5 @@ data["pred"] = np.log2(data["ref"] / data["alt"])
 data["pred_p"] = np.log2(data["ref_p"] / data["alt_p"])
 data.dropna(inplace=True)
 
-pearsonr(data["expt"], data["pred"])
-# PearsonRResult(statistic=0.24444150001598372, pvalue=0.0)
-pearsonr(data["expt"], data["pred_p"])
-# (0.02508640660560832, 3.072458192675234e-40)
+pearsonr(data[data.emVar_K562 == 1]["expt"], data[data.emVar_K562 == 1]["pred"])
+pearsonr(data[data.emVar_K562 == 1]["expt"], data[data.emVar_K562 == 1]["pred_p"])

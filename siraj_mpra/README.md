@@ -114,7 +114,7 @@ with open(test_alt_fasta_fp, "w") as f:
     for i, row in tqdm.tqdm(merged_df.iterrows(), total=len(merged_df)):
         f.write(f">{row['variant']}_alt\n{row['alt_seq']}\n")
 
-test_df.to_csv("../data/mprak562_mpra_snps_fold0.csv.gz", index=False)
+test_df.to_csv("../data/mpra/k562_mpra_snps_fold0.csv.gz", index=False)
 ```
 
 ## Run DeepSHAP
@@ -130,6 +130,21 @@ python calculate_deepshap.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_deepshap_${mode}.npz \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_ohe.npz \
     --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
+    --mode $mode \
+    --gpu 0
+```
+
+## Run DeepSHAP for ProCapNet
+
+```bash
+conda activate procapnet
+
+allele=ref
+mode=quantity
+python calculate_deepshap_procapnet.py \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0.fa \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_procapnet_deepshap_${mode}.npz \
+    --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
     --mode $mode \
     --gpu 0
 ```
