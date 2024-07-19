@@ -10,6 +10,15 @@ sys.path.append("../")
 import utils
 
 
+class ProfileWrapper(torch.nn.Module):
+    def __init__(self, model):
+        super(ProfileWrapper, self).__init__()
+        self.model = model
+
+    def forward(self, X):
+        return self.model(X)[0]
+
+
 class CountsWrapper(torch.nn.Module):
     def __init__(self, model):
         super(CountsWrapper, self).__init__()
@@ -94,23 +103,28 @@ def main():
         device = "cpu"
     import torch
 
+    # Load model
+    model_path = glob.glob(f"{args.model_dir}/*.torch")[0]
+    if args.mode == "profile":
+        raise NotImplementedError("Profile mode not implemented")
+        model = ProfileWrapper(torch.load(model_path))
+    elif args.mode == "counts":
+        model = CountsWrapper(torch.load(model_path))
+    else:
+        raise ValueError(f"Mode {args.mode} not recognized")
+    if args.gpu is not None:
+        model = model.cuda()
+
     # Load data
     sequences = torch.tensor(
         utils.get_twohot_fasta_sequences(args.fasta_path), dtype=torch.float32
     )
-
-    # Load model
-    model_path = glob.glob(f"{args.model_dir}/*.torch")[0]
-    model = CountsWrapper(torch.load(model_path))
-    if args.gpu is not None:
-        model = model.cuda()
 
     # Calculate attributions
     attributions = get_attributions(
         sequences,
         model,
         n_shuffles=args.n_shuffles,
-        mode=args.mode,
         device=device,
         rand=args.rand,
     )
