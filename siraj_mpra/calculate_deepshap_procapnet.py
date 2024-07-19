@@ -125,7 +125,6 @@ def main():
         ).swapaxes(1, 2)
         / 2
     ).to(torch.float)
-    print(sequences.shape)
 
     # Calculate attributions
     attributions = get_attributions(

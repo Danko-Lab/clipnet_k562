@@ -117,6 +117,39 @@ with open(test_alt_fasta_fp, "w") as f:
 test_df.to_csv("../data/mpra/k562_mpra_snps_fold0.csv.gz", index=False)
 ```
 
+```python
+import pandas as pd
+import pyfastx
+import tqdm
+
+data_folds = pd.read_csv("clipnet_data_fold_assignments.csv")
+df = pd.read_csv("../data/mpra/k562_allelic_mpra_snps.csv.gz")
+ref_fasta = pyfastx.Fasta("../data/mpra/k562_mpra_snps_2114_ref.fa.gz")
+alt_fasta = pyfastx.Fasta("../data/mpra/k562_mpra_snps_2114_alt.fa.gz")
+
+seq_df = pd.DataFrame(
+    {
+        "variant": [x.name.split("_")[0] for x in ref_fasta],
+        "ref_seq": [x.seq for x in ref_fasta],
+        "alt_seq": [x.seq for x in alt_fasta],
+    }
+)
+
+test_df = df[df["fold"] == 0]
+merged_df = seq_df.merge(test_df, on="variant")
+
+test_ref_fasta_fp = "../data/mpra/k562_mpra_snps_2114_ref_fold0.fa"
+with open(test_ref_fasta_fp, "w") as f:
+    for i, row in tqdm.tqdm(merged_df.iterrows(), total=len(merged_df)):
+        f.write(f">{row['variant']}_ref\n{row['ref_seq']}\n")
+
+
+test_alt_fasta_fp = "../data/mpra/k562_mpra_snps_2114_alt_fold0.fa"
+with open(test_alt_fasta_fp, "w") as f:
+    for i, row in tqdm.tqdm(merged_df.iterrows(), total=len(merged_df)):
+        f.write(f">{row['variant']}_alt\n{row['alt_seq']}\n")
+```
+
 ## Run DeepSHAP
 
 ```bash
@@ -145,9 +178,9 @@ mode=counts
 for fold in {0..6}; do 
     python calculate_deepshap_procapnet.py \
         /home2/ayh8/clipnet_k562/models/procapnet_k562/fold_${fold}/ \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0.fa.gz \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_procapnet_deepshap_${mode}.npz \
+        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_${allele}_fold0.fa \
+        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_${allele}_fold0_deepshap_${mode}.npz \
         --mode $mode \
-        --gpu 1;
+        --gpu 0;
 done
 ```
