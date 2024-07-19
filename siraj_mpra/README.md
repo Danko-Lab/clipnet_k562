@@ -141,7 +141,7 @@ conda activate procapnet
 
 cd /home2/ayh8/clipnet_k562/siraj_mpra
 allele=alt
-mode=quantity
+mode=counts
 for fold in {0..6}; do 
     python calculate_deepshap_procapnet.py \
         /home2/ayh8/clipnet_k562/models/procapnet_k562/fold_${fold}/ \
