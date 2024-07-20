@@ -61,7 +61,7 @@ def main():
         default=None,
         help="where to save one-hot encoded sequences (optional, for TF-MoDISco)",
     )
-    parser.add_argument("--n_shuffles", type=int, default=5)
+    parser.add_argument("--n_shuffles", type=int, default=20)
     parser.add_argument("--rand", type=int, default=47)
     parser.add_argument(
         "--mode",
@@ -107,13 +107,8 @@ def main():
             )
         ],
     ).to(torch.float32)
-    if len(ohe.shape) != 3 or ohe.shape[1] != 4:
-        raise ValueError(
-            f"{ohe.shape} is incorrect shape for one-hot encoded sequences. "
-            + "Expected (n_seqs, 4, seq_len)."
-        )
-    print(ohe.shape)
-    print(ohe.sum(axis=1).sum(axis=-1))
+    if args.gpu is not None:
+        ohe = ohe.cuda()
 
     # Calculate attributions
     attributions = deep_lift_shap(
@@ -123,6 +118,7 @@ def main():
         device=device,
         batch_size=1,
         random_state=args.rand,
+        verbose=not args.silence_tqdm,
     )
 
     # Save outputs
