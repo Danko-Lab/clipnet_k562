@@ -1,6 +1,5 @@
 import argparse
 import glob
-import sys
 
 import numpy as np
 import procapnet
@@ -8,8 +7,6 @@ import pyfastx
 import torch
 from tangermeme.deep_lift_shap import deep_lift_shap
 from tangermeme.utils import one_hot_encode
-
-sys.path.append("../")
 
 
 class ProfileWrapper(torch.nn.Module):
@@ -121,9 +118,7 @@ def main():
 
     # Load data
     sequences = pyfastx.Fasta(args.fasta_path)
-    ohe = torch.stack(
-        [one_hot_encode(rec.seq, dtype=torch.float32) for rec in sequences]
-    )
+    ohe = torch.stack([one_hot_encode(rec.seq) for rec in sequences])
     print(ohe.shape)
     print(ohe.sum(axis=1).sum(axis=-1))
 
