@@ -117,12 +117,7 @@ def main():
 
     # Calculate attributions
     attributions = deep_lift_shap(
-        model,
-        sequences,
-        n_shuffles=args.n_shuffles,
-        device=device,
-        batch_size=1,
-        random_state=args.rand,
+        model, ohe, n_shuffles=args.n_shuffles, device=device, random_state=args.rand
     )
 
     # Save outputs
