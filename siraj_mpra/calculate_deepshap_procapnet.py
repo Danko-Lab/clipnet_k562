@@ -28,29 +28,6 @@ class CountsWrapper(torch.nn.Module):
         return self.model(X)[1]
 
 
-def get_attributions(sequences, model, n_shuffles=5, device="cpu", rand=47):
-    if len(sequences.shape) != 3 or sequences.shape[1] != 4:
-        raise ValueError(
-            f"{sequences.shape} is incorrect shape for one-hot encoded sequences. "
-            + "Expected (n_seqs, 4, seq_len)."
-        )
-
-    attrs_fwd = deep_lift_shap(
-        model,
-        sequences,
-        n_shuffles=n_shuffles,
-        device=device,
-        batch_size=8,
-        random_state=rand,
-    )
-    # attrs_rev = deep_lift_shap(model, torch.flip(sequences, [1, 2]), n_shuffles=n_shuffles, device=device, batch_size=8, random_state=rand)
-    # attrs_rev = torch.flip(attrs_rev, [1, 2])
-    # Append mean of attributions for fwd and rev strands
-    # attrs_batch = np.array([attrs_fwd.numpy(), attrs_rev.numpy()])
-    # attrs.append(attrs_batch.mean(axis=0))
-    return attrs_fwd
-
-
 def save_deepshap_results(onehot_seqs, scores, scores_path, onehot_seqs_path=None):
     if len(onehot_seqs.shape) != 3 or onehot_seqs.shape[1] != 4:
         raise ValueError(
@@ -130,10 +107,22 @@ def main():
             )
         ],
     ).to(torch.float32)
+    if len(sequences.shape) != 3 or sequences.shape[1] != 4:
+        raise ValueError(
+            f"{sequences.shape} is incorrect shape for one-hot encoded sequences. "
+            + "Expected (n_seqs, 4, seq_len)."
+        )
+    print(ohe.shape)
+    print(ohe.sum(axis=1).sum(axis=-1))
 
     # Calculate attributions
-    attributions = get_attributions(
-        ohe, model, n_shuffles=args.n_shuffles, device=device, rand=args.rand
+    attributions = deep_lift_shap(
+        model,
+        sequences,
+        n_shuffles=args.n_shuffles,
+        device=device,
+        batch_size=1,
+        random_state=args.rand,
     )
 
     # Save outputs
