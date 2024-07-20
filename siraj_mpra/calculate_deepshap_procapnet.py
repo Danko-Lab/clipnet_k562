@@ -116,7 +116,7 @@ def main():
         ohe,
         n_shuffles=args.n_shuffles,
         device=device,
-        batch_size=1,
+        batch_size=8,
         random_state=args.rand,
         verbose=not args.silence_tqdm,
     )
