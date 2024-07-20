@@ -121,7 +121,7 @@ def main():
     sequences = pyfastx.Fasta(args.fasta_path)
     ohe = torch.stack(
         [
-            one_hot_encode(rec.seq)
+            one_hot_encode(rec.seq.upper())
             for rec in tqdm.tqdm(
                 sequences,
                 desc="One-hot encoding",
