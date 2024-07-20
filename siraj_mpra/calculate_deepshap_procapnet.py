@@ -120,7 +120,7 @@ def main():
 
     # Load data
     sequences = torch.tensor(
-        utils.get_twohot_fasta_sequences(args.fasta_path) / 2, dtype=torch.int
+        utils.get_twohot_fasta_sequences(args.fasta_path) / 2, dtype=torch.float32
     ).swapaxes(1, 2)
 
     # Calculate attributions
