@@ -122,6 +122,8 @@ def main():
     sequences = torch.tensor(
         utils.get_twohot_fasta_sequences(args.fasta_path) / 2, dtype=torch.float32
     ).swapaxes(1, 2)
+    print(sequences.shape)
+    print(sequences.sum(axis=1).sum(axis=-1))
 
     # Calculate attributions
     attributions = get_attributions(
