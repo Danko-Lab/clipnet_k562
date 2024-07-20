@@ -4,11 +4,12 @@ import sys
 
 import numpy as np
 import procapnet
+import pyfastx
 import torch
 from tangermeme.deep_lift_shap import deep_lift_shap
+from tangermeme.utils import one_hot_encode
 
 sys.path.append("../")
-import utils
 
 
 class ProfileWrapper(torch.nn.Module):
@@ -119,19 +120,16 @@ def main():
         model = model.cuda()
 
     # Load data
-    sequences = torch.tensor(
-        utils.get_twohot_fasta_sequences(args.fasta_path) / 2, dtype=torch.float32
-    ).swapaxes(1, 2)
-    print(sequences.shape)
-    print(sequences.sum(axis=1).sum(axis=-1))
+    sequences = pyfastx.Fasta(args.fasta_path)
+    ohe = torch.stack(
+        [one_hot_encode(rec.seq, dtype=torch.float32) for rec in sequences]
+    )
+    print(ohe.shape)
+    print(ohe.sum(axis=1).sum(axis=-1))
 
     # Calculate attributions
     attributions = get_attributions(
-        sequences,
-        model,
-        n_shuffles=args.n_shuffles,
-        device=device,
-        rand=args.rand,
+        ohe, model, n_shuffles=args.n_shuffles, device=device, rand=args.rand
     )
 
     # Save outputs
