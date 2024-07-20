@@ -128,7 +128,8 @@ def main():
                 total=len(sequences),
                 disable=args.silence_tqdm,
             )
-        ]
+        ],
+        dtype=torch.float32,
     )
     print(ohe.shape)
     print(ohe.sum(axis=1).sum(axis=-1))
