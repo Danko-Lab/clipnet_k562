@@ -107,9 +107,9 @@ def main():
             )
         ],
     ).to(torch.float32)
-    if len(sequences.shape) != 3 or sequences.shape[1] != 4:
+    if len(ohe.shape) != 3 or ohe.shape[1] != 4:
         raise ValueError(
-            f"{sequences.shape} is incorrect shape for one-hot encoded sequences. "
+            f"{ohe.shape} is incorrect shape for one-hot encoded sequences. "
             + "Expected (n_seqs, 4, seq_len)."
         )
     print(ohe.shape)
