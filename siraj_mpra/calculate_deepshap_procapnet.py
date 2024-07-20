@@ -129,10 +129,7 @@ def main():
                 disable=args.silence_tqdm,
             )
         ],
-        dtype=torch.float32,
-    )
-    print(ohe.shape)
-    print(ohe.sum(axis=1).sum(axis=-1))
+    ).to(torch.float32)
 
     # Calculate attributions
     attributions = get_attributions(
