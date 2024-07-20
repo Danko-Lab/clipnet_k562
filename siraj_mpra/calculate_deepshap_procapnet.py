@@ -119,12 +119,9 @@ def main():
         model = model.cuda()
 
     # Load data
-    sequences = (
-        torch.tensor(
-            utils.get_twohot_fasta_sequences(args.fasta_path), dtype=torch.float32
-        ).swapaxes(1, 2)
-        / 2
-    ).to(torch.float)
+    sequences = torch.tensor(
+        utils.get_twohot_fasta_sequences(args.fasta_path) / 2, dtype=torch.int
+    ).swapaxes(1, 2)
 
     # Calculate attributions
     attributions = get_attributions(

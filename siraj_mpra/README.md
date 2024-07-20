@@ -175,12 +175,12 @@ conda activate procapnet
 cd /home2/ayh8/clipnet_k562/siraj_mpra
 allele=alt
 mode=counts
-for fold in {0..6}; do 
+for fold in {4..6}; do 
     python calculate_deepshap_procapnet.py \
         /home2/ayh8/clipnet_k562/models/procapnet_k562/fold_${fold}/ \
         /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_${allele}_fold0.fa \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_${allele}_fold0_deepshap_${mode}.npz \
+        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_${allele}_fold0_model${fold}_deepshap_${mode}.npz \
         --mode $mode \
-        --gpu 0;
+        --gpu 1;
 done
 ```

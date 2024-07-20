@@ -5,6 +5,7 @@ import pandas as pd
 import tqdm
 from sklearn.metrics import average_precision_score
 from sklearn.utils import resample
+from scipy.stats import wilcoxon
 
 data = pd.read_csv("/home2/ayh8/clipnet_k562/data/mpra/k562_allelic_mpra_snps.csv.gz")
 
@@ -37,3 +38,11 @@ with mp.Pool(60) as pool:
     results = list(
         tqdm.tqdm(pool.imap(calculate_bootstrap, range(int(1e6))), total=int(1e6))
     )
+
+results = pd.DataFrame(results)
+results.columns = ["clipnet", "procapnet"]
+results.to_csv(
+    "/home2/ayh8/clipnet_k562/data/mpra/k562_allelic_mpra_bootstrap_average_precision.csv.gz"
+)
+
+wilcoxon(results.clipnet, results.procapnet)
