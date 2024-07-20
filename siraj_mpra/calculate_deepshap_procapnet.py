@@ -5,6 +5,7 @@ import numpy as np
 import procapnet
 import pyfastx
 import torch
+import tqdm
 from tangermeme.deep_lift_shap import deep_lift_shap
 from tangermeme.utils import one_hot_encode
 
@@ -118,7 +119,17 @@ def main():
 
     # Load data
     sequences = pyfastx.Fasta(args.fasta_path)
-    ohe = torch.stack([one_hot_encode(rec.seq) for rec in sequences])
+    ohe = torch.stack(
+        [
+            one_hot_encode(rec.seq)
+            for rec in tqdm.tqdm(
+                sequences,
+                desc="One-hot encoding",
+                total=len(sequences),
+                disable=args.silence_tqdm,
+            )
+        ]
+    )
     print(ohe.shape)
     print(ohe.sum(axis=1).sum(axis=-1))
 
