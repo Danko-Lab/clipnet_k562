@@ -123,7 +123,10 @@ def main():
 
     # Save outputs
     save_deepshap_results(
-        ohe, attributions, args.scores_path, onehot_seqs_path=args.ohe_seqs_path
+        ohe.cpu().numpy(),
+        attributions,
+        args.scores_path,
+        onehot_seqs_path=args.ohe_seqs_path,
     )
 
 
