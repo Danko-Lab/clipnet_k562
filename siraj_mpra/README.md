@@ -15,9 +15,9 @@ Use `process_SI.ipynb`.
 Run `create_reporter_constructs.py`. This script will generate the reporter constructs used in the MPRA experiment (may be worth confirming with the original authors), and random sequences to be use to potentially marginalize out minP activity.
 
 ```bash
-python create_reporter_constructs.py media-3_oligos_snps.tsv.gz ../data/mpra/k562_mpra_snps
-python create_reporter_constructs.py media-3_oligos_snps.tsv.gz ../data/mpra/k562_mpra_snps --dinuc_shuffles 1
-python create_reporter_constructs.py media-3_oligos_snps.tsv.gz ../data/mpra/k562_mpra_snps_2114 --procapnet
+python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps
+python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps --dinuc_shuffles 1
+python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps_2114 --procapnet
 ```
 
 ## Now predict on these sequences
