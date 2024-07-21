@@ -5,7 +5,6 @@ import sys
 import h5py
 import numpy as np
 import procapnet
-import pyfastx
 import torch
 import tqdm
 from tangermeme.predict import predict
@@ -23,11 +22,11 @@ loaded_models = [
     for i in range(7)
 ]
 
-ref_seqs = [
-    rec.seq for rec in pyfastx.Fasta("../data/mpra/k562_mpra_snps_2114_ref.fa.gz")
-]
-ref_ohe = np.array([utils.one_hot_encode(seq) for seq in tqdm.tqdm(ref_seqs)]).swapaxes(
-    1, 2
+ref_ohe = (
+    utils.get_twohot_fasta_sequences(
+        "../data/mpra/k562_mpra_snps_2114_ref.fa.gz"
+    ).swapaxes(1, 2)
+    / 2
 )
 # ref_pred = []
 # for model in tqdm.tqdm(models):
@@ -40,11 +39,11 @@ for model in tqdm.tqdm(models):
 ref_quantity = np.array([p[1][:, 0].numpy() for p in ref_pred])
 
 
-alt_seqs = [
-    rec.seq for rec in pyfastx.Fasta("../data/mpra/k562_mpra_snps_2114_alt.fa.gz")
-]
-alt_ohe = np.array([utils.one_hot_encode(seq) for seq in tqdm.tqdm(alt_seqs)]).swapaxes(
-    1, 2
+alt_ohe = (
+    utils.get_twohot_fasta_sequences(
+        "../data/mpra/k562_mpra_snps_2114_alt.fa.gz"
+    ).swapaxes(1, 2)
+    / 2
 )
 
 alt_pred = []
