@@ -61,7 +61,7 @@ def main():
         default=None,
         help="where to save one-hot encoded sequences (optional, for TF-MoDISco)",
     )
-    parser.add_argument("--n_shuffles", type=int, default=5)
+    parser.add_argument("--n_shuffles", type=int, default=20)
     parser.add_argument("--rand", type=int, default=47)
     parser.add_argument(
         "--mode",
