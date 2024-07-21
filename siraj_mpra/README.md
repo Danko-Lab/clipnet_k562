@@ -36,11 +36,6 @@ python predict_ensemble.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.h5 \
     --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
     --gpu 0
-python predict_ensemble.py \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_shuffle1.fa.gz \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_shuffle1.h5 \
-    --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
-    --gpu 0
 
 for i in {1..9}; do
     python predict_individual_model.py \
@@ -64,11 +59,18 @@ done
 ```bash
 conda activate procapnet
 
+cd /home2/ayh8/clipnet_k562/siraj_mpra/
 python predict_ensemble_procapnet.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.fa.gz \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.h5 \
     --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
     --gpu 0
+
+python predict_ensemble_procapnet.py \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.fa.gz \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref.h5 \
+    --model_dir /home2/ayh8/clipnet_k562/models/procapnet_k562/ \
+    --gpu 1
 ```
 
 ## Calculate performance metrics

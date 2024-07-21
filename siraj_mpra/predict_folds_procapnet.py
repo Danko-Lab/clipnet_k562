@@ -1,5 +1,6 @@
 import glob
 import os
+import sys
 
 import h5py
 import numpy as np
@@ -9,9 +10,10 @@ import torch
 import tqdm
 from tangermeme.predict import predict
 
+sys.path.append("../")
 import utils
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 models = [procapnet.ProCapNet() for i in range(7)]
 loaded_models = [

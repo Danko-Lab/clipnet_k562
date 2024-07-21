@@ -1,5 +1,6 @@
 import glob
 import os
+import sys
 
 import h5py
 import numpy as np
@@ -7,6 +8,7 @@ import procapnet
 import torch
 import tqdm
 
+sys.path.append("../")
 import utils
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
