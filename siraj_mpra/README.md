@@ -159,7 +159,7 @@ conda activate clipnet
 
 cd /home2/ayh8/clipnet/
 allele=alt
-mode=profile
+mode=quantity
 python calculate_deepshap.py \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0.fa \
     /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_${allele}_fold0_deepshap_${mode}.npz \
