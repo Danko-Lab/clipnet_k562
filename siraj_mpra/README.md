@@ -175,9 +175,9 @@ python calculate_deepshap.py \
 conda activate procapnet
 
 cd /home2/ayh8/clipnet_k562/siraj_mpra
-allele=alt
+allele=ref
 mode=counts
-for fold in {0..3}; do 
+for fold in {4..6}; do 
     python calculate_deepshap_procapnet.py \
         /home2/ayh8/clipnet_k562/models/procapnet_k562/fold_${fold}/ \
         /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_${allele}_fold0.fa \
