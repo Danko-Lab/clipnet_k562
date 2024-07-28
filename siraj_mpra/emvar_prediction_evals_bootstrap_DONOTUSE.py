@@ -1,3 +1,5 @@
+### THIS IS BUGGED BECAUSE MP CAUSES ISSUES IN RESAMPLING
+
 import multiprocessing as mp
 import random
 

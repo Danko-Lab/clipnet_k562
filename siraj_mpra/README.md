@@ -18,6 +18,7 @@ Run `create_reporter_constructs.py`. This script will generate the reporter cons
 python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps
 python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps --dinuc_shuffles 1
 python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps_2114 --procapnet
+python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps_2114 --dinuc_shuffles 1 --procapnet
 ```
 
 ## Now predict on these sequences
@@ -52,6 +53,12 @@ for i in {1..9}; do
         ../clipnet_k562/data/mpra/k562_mpra_snps_alt_fold_${i}.h5 \
         --gpu 0;
 done
+
+python predict_ensemble.py \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_shuffle1.fa.gz \
+    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_shuffle1.h5 \
+    --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
+    --gpu 1
 ```
 
 ## Predict using ProCapNet
