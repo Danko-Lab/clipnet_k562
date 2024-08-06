@@ -55,7 +55,7 @@ alt_tensor = torch.stack(alt).to(torch.float).swapaxes(1, 2)
 # Predict
 
 alt_prediction = predict(
-    enformer, alt_tensor, device="cuda:0", batch_size=1, verbose=True
+    enformer, alt_tensor, device="cuda:1", batch_size=1, verbose=True
 )
 
 torch.cuda.empty_cache()
