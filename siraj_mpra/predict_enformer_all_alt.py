@@ -46,7 +46,7 @@ for name, seq in tqdm.tqdm(
         padded_seqs[name] = seq
 
 alt_seqs = [
-    seq[: len(seq) // 2 - 1] + name.split(":")[-1] + seq.upper()[len(seq) // 2 :]
+    seq[: len(seq) // 2 - 1] + name.split(":")[3] + seq.upper()[len(seq) // 2 :]
     for name, seq in tqdm.tqdm(padded_seqs.items())
 ]
 alt = [one_hot_encode(seq) for seq in tqdm.tqdm(alt_seqs, total=len(alt_seqs))]
