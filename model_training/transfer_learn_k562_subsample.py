@@ -13,8 +13,9 @@ import clipnet
 import rnn_v10
 import time_history
 
-fold = int(sys.argv[1])
-gpu = int(sys.argv[2])
+run = int(sys.argv[1])
+fold = int(sys.argv[2])
+gpu = int(sys.argv[3])
 
 
 def warmup_lr(epoch, lr):
@@ -30,7 +31,7 @@ def warmup_lr(epoch, lr):
         return lr
 
 
-outdir = Path(f"/home2/ayh8/k562_ensemble_models/f{fold}/")
+outdir = Path(f"/home2/ayh8/k562_subsample_models/run_{run}/f{fold}/")
 with open(outdir.joinpath("dataset_params.json"), "r") as f:
     dataset_params = json.load(f)
 steps_per_epoch = math.floor(
@@ -57,7 +58,7 @@ train_gen = cgen.CGen(*train_args)
 val_gen = cgen.CGen(*val_args)
 nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
 fit_model = tf.keras.models.load_model(
-    f"/home2/ayh8/clipnet/ensemble_models/fold_{fold}.h5", compile=False
+    f"/home2/ayh8/clipnet_subsampling/models/n1_run{run}/fold_{fold}.h5", compile=False
 )
 fit_model.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
