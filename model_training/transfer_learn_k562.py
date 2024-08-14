@@ -1,8 +1,9 @@
 import json
+import logging
 import math
+import os
 import sys
 from pathlib import Path
-import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
