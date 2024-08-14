@@ -31,7 +31,9 @@ def warmup_lr(epoch, lr):
         return lr
 
 
-outdir = Path(f"/home2/ayh8/clipnet_k562/subsample_transfer_models/run_{run}/f{fold}/")
+outdir = Path(
+    f"/home2/ayh8/clipnet_k562/models/clipnet_subsample_k562_models/run_{run}/f{fold}/"
+)
 outdir.mkdir(parents=True, exist_ok=True)
 with open(outdir.joinpath("dataset_params.json"), "r") as f:
     dataset_params = json.load(f)
