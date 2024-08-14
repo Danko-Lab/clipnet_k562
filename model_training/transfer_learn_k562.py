@@ -2,7 +2,10 @@ import json
 import math
 import sys
 from pathlib import Path
+import os
 
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
+logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
@@ -11,7 +14,6 @@ sys.path.append("/home2/ayh8/clipnet/")
 import cgen
 import clipnet
 import rnn_v10
-import time_history
 
 fold = int(sys.argv[1])
 gpu = int(sys.argv[2])
@@ -70,7 +72,7 @@ model_filepath = str(
 )
 cp = tf.keras.callbacks.ModelCheckpoint(model_filepath, verbose=0, save_best_only=True)
 early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=20)
-training_time = time_history.TimeHistory()
+training_time = clipnet.TimeHistory()
 tqdm_callback = TqdmCallback(verbose=1, bar_format="{l_bar}{bar:10}{r_bar}{bar:-10b}")
 csv_logger = CSVLogger(
     filename=outdir.joinpath("transfer.log"),
