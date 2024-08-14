@@ -31,7 +31,8 @@ def warmup_lr(epoch, lr):
         return lr
 
 
-outdir = Path(f"/home2/ayh8/k562_subsample_models/run_{run}/f{fold}/")
+outdir = Path(f"/home2/ayh8/clipnet_k562/subsample_transfer_models/run_{run}/f{fold}/")
+outdir.mkdir(parents=True, exist_ok=True)
 with open(outdir.joinpath("dataset_params.json"), "r") as f:
     dataset_params = json.load(f)
 steps_per_epoch = math.floor(
@@ -66,9 +67,7 @@ fit_model.compile(
     loss_weights={"shape": 1, "sum": dataset_params["weight"]},
     metrics=rnn_v10.metrics,
 )
-model_filepath = str(
-    outdir.joinpath("transfer_epoch{epoch:02d}-loss{val_loss:.4f}.hdf5")
-)
+model_filepath = str(outdir.joinpath(f"../fold_{fold}.h5"))
 cp = tf.keras.callbacks.ModelCheckpoint(model_filepath, verbose=0, save_best_only=True)
 early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=20)
 training_time = time_history.TimeHistory()
