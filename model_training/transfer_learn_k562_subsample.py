@@ -35,7 +35,7 @@ def warmup_lr(epoch, lr):
 
 
 outdir = Path(
-    f"/home2/ayh8/clipnet_k562/models/clipnet_subsample_k562_models/run_{run}/f{fold}/"
+    f"/home2/ayh8/clipnet_k562/models/clipnet_subsample_k562_models/n5/run_{run}/f{fold}/"
 )
 outdir.mkdir(parents=True, exist_ok=True)
 with open(outdir.joinpath("dataset_params.json"), "r") as f:
@@ -64,7 +64,7 @@ train_gen = cgen.CGen(*train_args)
 val_gen = cgen.CGen(*val_args)
 nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
 fit_model = tf.keras.models.load_model(
-    f"/home2/ayh8/clipnet_subsampling/models/n1_run{run}/fold_{fold}.h5", compile=False
+    f"/home2/ayh8/clipnet_subsampling/models/n5_run{run}/fold_{fold}.h5", compile=False
 )
 fit_model.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
