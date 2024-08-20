@@ -18,7 +18,7 @@ class ProfileWrapper(torch.nn.Module):
 
     def forward(self, X):
         logits = self.model(X)[0]
-        return (self.softmax(logits) * logits).sum(dim=-1).sum(dim=-1)
+        return (self.softmax(logits) * logits).sum(dim=-1).sum(dim=-1).squeeze()
 
 
 class CountsWrapper(torch.nn.Module):
