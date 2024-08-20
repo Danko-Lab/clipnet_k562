@@ -18,7 +18,7 @@ class ProfileWrapper(torch.nn.Module):
 
     def forward(self, X):
         logits = self.model(X)[0]
-        return (self.softmax(logits) * logits)
+        return (self.softmax(logits) * logits).sum()
 
 class CountsWrapper(torch.nn.Module):
     def __init__(self, model):
@@ -95,7 +95,7 @@ def main():
     if args.gpu is not None:
         model = model.cuda()
     from tangermeme.utils import random_one_hot
-    print(model(random_one_hot((1, 4, 2114)).to(torch.float32).cuda()).shape)
+    print(model(random_one_hot((10, 4, 2114)).to(torch.float32).cuda()).shape)
 
     # Load data
     sequences = pyfastx.Fasta(args.fasta_path)
