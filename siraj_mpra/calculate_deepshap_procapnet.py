@@ -14,9 +14,11 @@ class ProfileWrapper(torch.nn.Module):
     def __init__(self, model):
         super(ProfileWrapper, self).__init__()
         self.model = model
+        self.softmax = torch.nn.Softmax(dim=-1)
 
     def forward(self, X):
-        return self.model(X)[0]
+        logits = self.model(X)[0]
+        return (self.softmax(logits) * logits).sum(dim=-1).sum(dim=-1)
 
 
 class CountsWrapper(torch.nn.Module):
@@ -85,7 +87,7 @@ def main():
     loader = procapnet.ProCapNet()
     loader.load_state_dict(torch.load(model_path))
     if args.mode == "profile":
-        raise NotImplementedError("Profile mode not implemented")
+        # raise NotImplementedError("Profile mode not implemented")
         model = ProfileWrapper(loader)
     elif args.mode == "counts":
         model = CountsWrapper(loader)
