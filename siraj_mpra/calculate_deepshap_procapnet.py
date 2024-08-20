@@ -6,27 +6,10 @@ import procapnet
 import pyfastx
 import torch
 import tqdm
+from bpnetlite.bpnet import CountWrapper, ProfileWrapper
 from tangermeme.deep_lift_shap import deep_lift_shap
 from tangermeme.utils import one_hot_encode
 
-
-class ProfileWrapper(torch.nn.Module):
-    def __init__(self, model):
-        super(ProfileWrapper, self).__init__()
-        self.model = model
-        self.softmax = torch.nn.Softmax(dim=-1)
-
-    def forward(self, X):
-        logits = self.model(X)[0]
-        return (self.softmax(logits) * logits).sum(dim=-1).sum(dim=-1, keepdim=True)
-
-class CountsWrapper(torch.nn.Module):
-    def __init__(self, model):
-        super(CountsWrapper, self).__init__()
-        self.model = model
-
-    def forward(self, X):
-        return self.model(X)[1]
 
 
 def save_deepshap_results(onehot_seqs, scores, scores_path, onehot_seqs_path=None):
@@ -89,7 +72,7 @@ def main():
         # raise NotImplementedError("Profile mode not implemented")
         model = ProfileWrapper(loader)
     elif args.mode == "counts":
-        model = CountsWrapper(loader)
+        model = CountWrapper(loader)
     else:
         raise ValueError(f"Mode {args.mode} not recognized")
     if args.gpu is not None:
