@@ -94,6 +94,8 @@ def main():
         raise ValueError(f"Mode {args.mode} not recognized")
     if args.gpu is not None:
         model = model.cuda()
+    from tangermeme.utils import random_one_hot
+    print(model(random_one_hot((1, 4, 2114))).shape)
 
     # Load data
     sequences = pyfastx.Fasta(args.fasta_path)
@@ -110,8 +112,7 @@ def main():
     ).to(torch.float32)
     if args.gpu is not None:
         ohe = ohe.cuda()
-    from tangermeme.predict import predict
-    print(model(ohe[0, :, :]).shape)
+    
 
     # Calculate attributions
     attributions = deep_lift_shap(
