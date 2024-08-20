@@ -10,8 +10,6 @@ from bpnetlite.bpnet import CountWrapper, ProfileWrapper
 from tangermeme.deep_lift_shap import deep_lift_shap
 from tangermeme.utils import one_hot_encode
 
-
-
 def save_deepshap_results(onehot_seqs, scores, scores_path, onehot_seqs_path=None):
     if len(onehot_seqs.shape) != 3 or onehot_seqs.shape[1] != 4:
         raise ValueError(
