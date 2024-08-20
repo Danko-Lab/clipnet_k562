@@ -7,7 +7,8 @@ import pyfastx
 import torch
 import tqdm
 from bpnetlite.bpnet import CountWrapper, ProfileWrapper
-from tangermeme.deep_lift_shap import deep_lift_shap
+from bpnetlite.attribute import deep_lift_shap
+#from tangermeme.deep_lift_shap import deep_lift_shap
 from tangermeme.utils import one_hot_encode
 
 def save_deepshap_results(onehot_seqs, scores, scores_path, onehot_seqs_path=None):
