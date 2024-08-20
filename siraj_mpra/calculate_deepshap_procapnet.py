@@ -111,6 +111,8 @@ def main():
     ).to(torch.float32)
     if args.gpu is not None:
         ohe = ohe.cuda()
+    from tangermeme.predict import predict
+    print(predict(model, ohe[0]).shape)
 
     # Calculate attributions
     attributions = deep_lift_shap(
