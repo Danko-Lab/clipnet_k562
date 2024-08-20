@@ -95,7 +95,7 @@ def main():
     if args.gpu is not None:
         model = model.cuda()
     from tangermeme.utils import random_one_hot
-    print(model(random_one_hot((1, 4, 2114)).astype(float)).shape)
+    print(model(random_one_hot((1, 4, 2114)).to(torch.float32)).shape)
 
     # Load data
     sequences = pyfastx.Fasta(args.fasta_path)
