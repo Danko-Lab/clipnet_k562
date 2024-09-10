@@ -69,10 +69,10 @@ fit_model.compile(
     metrics=rnn_v10.metrics,
 )
 model_filepath = str(
-    outdir.joinpath("transfer_epoch{epoch:02d}-loss{val_loss:.4f}.hdf5")
+    outdir.joinpath("clipnet_k562.h5")
 )
 cp = tf.keras.callbacks.ModelCheckpoint(model_filepath, verbose=0, save_best_only=True)
-early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=20)
+early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=10)
 training_time = clipnet.TimeHistory()
 tqdm_callback = TqdmCallback(verbose=1, bar_format="{l_bar}{bar:10}{r_bar}{bar:-10b}")
 csv_logger = CSVLogger(
