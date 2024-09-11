@@ -10,6 +10,14 @@ alt_ensemble = h5py.File("/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.
     "quantity"
 ][:, 0]
 
+ref_ref_ensemble = h5py.File(
+    "/home2/ayh8/predictions/k562/mpra/k562_mpra_snps_ref_ref_model.h5"
+)["quantity"][:, 0]
+
+alt_ref_ensemble = h5py.File(
+    "/home2/ayh8/predictions/k562/mpra/k562_mpra_snps_alt_ref_model.h5"
+)["quantity"][:, 0]
+
 ref = [
     h5py.File(f"/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_fold_{i}.h5")[
         "quantity"
@@ -22,6 +30,7 @@ alt = [
     ][:, 0]
     for i in range(1, 10)
 ]
+
 
 procapnet_ref = h5py.File(
     "/home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_2114_ref_procapnet_folds.h5"
@@ -73,6 +82,14 @@ pred = pd.DataFrame(
     }
 )
 
+pred = pd.DataFrame(
+    {
+        "ref_clipnet_reference_ensemble": ref_ref_ensemble,
+        "alt_clipnet_reference_ensemble": alt_ref_ensemble,
+        "variant": snps["Variant"],
+    }
+)
+
 for i in range(7):
     pred[f"ref_procapnet_fold_{i}"] = procapnet_ref["ref"][i]
     pred[f"alt_procapnet_fold_{i}"] = procapnet_alt["alt"][i]
@@ -88,6 +105,9 @@ data["log2fc_expt"] = np.log2(
 )
 data["log2fc_clipnet_ensemble"] = np.log2(
     data["ref_clipnet_ensemble"] / data["alt_clipnet_ensemble"]
+)
+data["log2fc_clipnet_reference_ensemble"] = np.log2(
+    data["ref_clipnet_reference_ensemble"] / data["alt_clipnet_reference_ensemble"]
 )
 data["log2fc_clipnet_holdout"] = np.log2(
     data["ref_clipnet_holdout"] / data["alt_clipnet_holdout"]
@@ -105,7 +125,7 @@ for i in range(1, 10):
     )
 
 data.to_csv(
-    "/home2/ayh8/clipnet_k562/data/mpra/k562_allelic_mpra_snps.csv.gz", index=False
+    "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/k562_allelic_mpra_snps.csv.gz", index=False
 )
 data = data[np.isfinite(data["log2fc_clipnet_holdout"])]
 data.dropna(inplace=True)
