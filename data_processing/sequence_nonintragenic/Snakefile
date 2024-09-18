@@ -38,6 +38,8 @@ rule sequence_all:  # A master rule that ensures all the other rules run
 rule unpack_windows:
     input:
         os.path.join(DATADIR, "k562_procap_nonintragenic_tss_1kb_windows.bed.gz"),
+    resources:
+        load=1,
     output:
         os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
     shell:
@@ -47,6 +49,8 @@ rule unpack_windows:
 rule unpack_fa:
     input:
         "/fs/cbsubscb17/storage/data/short_read_index/hg38/hg38.rRNA.fa.gz",
+    resources:
+        load=1,
     output:
         os.path.join(WORKDIR, "hg38.withrDNA.fa"),
     shell:
@@ -57,6 +61,8 @@ rule get_window_sequences:
     input:
         fa=os.path.join(WORKDIR, "hg38.withrDNA.fa"),
         bed=os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
+    resources:
+        load=1,
     output:
         os.path.join(WORKDIR, "k562_sequence.fa"),
     shell:
@@ -116,7 +122,7 @@ rule numpify_fasta:
         import sys
         import pyfastx
 
-        sys.path.append("../../model_training/")
+        sys.path.append("../../clipnet_transfer_learning/")
         import utils
 
         seq_array = utils.get_twohot_fasta_sequences(input.fa, cores=1)
