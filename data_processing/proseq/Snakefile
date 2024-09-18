@@ -43,11 +43,11 @@ rule unpack_bigwigs:
     input:
         os.path.join(
             REFDIR,
-            "k562/proseq/Sample_K562UNT_121109_proseq_2.fastq.gz.na_QC_{strand}.rpm.bw",
+            "k562/proseq/Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_{strand}.rpm.bw",
         ),
     output:
         os.path.join(
-            WORKDIR, "Sample_K562UNT_121109_proseq_2.fastq.gz.na_QC_{strand}.rpm.bw"
+            WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_{strand}.rpm.bw"
         ),
     shell:
         "rsync {input} {output}"
@@ -57,7 +57,7 @@ rule get_procap_signal:
     input:
         windows=os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
         bw=os.path.join(
-            WORKDIR, "Sample_K562UNT_121109_proseq_2.fastq.gz.na_QC_{strand}.rpm.bw"
+            WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_{strand}.rpm.bw"
         ),
     output:
         os.path.join(WORKDIR, "k562_proseq_{strand}.txt"),
