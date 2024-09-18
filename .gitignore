@@ -7,13 +7,14 @@
 */*/*.model
 data/*/*.fa.gz*
 siraj_mpra/k562_allelic_mpra_snps.csv.gz
+*/_old/
+*/old/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 .DS_Store
-*/old/
 
 # C extensions
 *.so
