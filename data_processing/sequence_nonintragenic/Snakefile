@@ -24,7 +24,6 @@ rule sequence_all:  # A master rule that ensures all the other rules run
     input:
         output,
         output_fa,
-        centered_fa,
     params:
         WORKDIR,
     shell:
