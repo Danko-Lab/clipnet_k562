@@ -1,17 +1,21 @@
-# CLIPNET K562
+# Analysis of transcription initiation models in K562
 
 Transfer learning of CLIPNET (trained in LCLs) to K562
 
 ## Download pretrained models
 
-### CLIPNET_K562
+### CLIPNET K562
 
 ```bash
+
 ```
 
-### ProCapNet_K562
+### ProCapNet K562
 
 ```bash
+wget https://www.encodeproject.org/files/ENCFF976FHE/@@download/ENCFF976FHE.tar.gz
+tar -xvf ENCFF976FHE.tar.gz -C ../models/procapnet_k562/
+rm ENCFF976FHE.tar.gz
 ```
 
 ### Calculate CLIPNET_K562 predictions
