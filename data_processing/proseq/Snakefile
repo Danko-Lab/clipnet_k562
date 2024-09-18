@@ -16,7 +16,7 @@ output = [
 ]
 
 
-rule procap_all:  # A master rule that ensures all the other rules run
+rule proseq_all:  # A master rule that ensures all the other rules run
     input:
         output,
     params:
@@ -53,7 +53,7 @@ rule unpack_bigwigs:
         "rsync {input} {output}"
 
 
-rule get_procap_signal:
+rule get_proseq_signal:
     input:
         windows=os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
         bw=os.path.join(
@@ -120,7 +120,7 @@ rule split_signal:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-rule join_procap:
+rule join_proseq:
     input:
         pl=os.path.join(WORKDIR, "k562_proseq_plus.{fold}.csv.gz"),
         mn=os.path.join(WORKDIR, "k562_proseq_minus.{fold}.csv.gz"),
