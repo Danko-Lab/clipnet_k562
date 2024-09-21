@@ -7,7 +7,9 @@ Transfer learning of CLIPNET (trained in LCLs) to K562
 ### CLIPNET K562
 
 ```bash
-
+for fold in {1..9};
+do wget https://zenodo.org/records/11196189/files/fold_${fold}.h5 -P ../models/clipnet_k562/;
+done
 ```
 
 ### ProCapNet K562
