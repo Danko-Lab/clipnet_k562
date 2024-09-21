@@ -94,6 +94,13 @@ python calculate_deepshap.py \
 conda activate modisco
 mode=profile
 
-time modisco motifs -s attributions/k562_seqs_onehot.npz -a attributions/k562_deepshap_${mode}.npz -n 1000000 -l 50 -v -o attributions/k562_deepshap_${mode}_modisco.h5
-time modisco report -i attributions/k562_deepshap_${mode}_modisco.h5 -o attributions/k562_deepshap_${mode}_modisco/ -m /home2/ayh8/data/JASPAR/JASPAR2022_CORE_vertebrates_non-redundant_pfms_meme.txt
+time modisco motifs \
+    -s attributions/k562_seqs_onehot.npz \
+    -a attributions/k562_deepshap_${mode}.npz \
+    -o attributions/k562_deepshap_${mode}_modisco.h5 \
+    -n 1000000 -l 50 -v 
+time modisco report \
+    -i attributions/k562_deepshap_${mode}_modisco.h5 \
+    -o attributions/k562_deepshap_${mode}_modisco/ \
+    -m /home2/ayh8/data/JASPAR/JASPAR2022_CORE_vertebrates_non-redundant_pfms_meme.txt
 ```
