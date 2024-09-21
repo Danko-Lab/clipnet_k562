@@ -1,6 +1,8 @@
 # Analysis of transcription initiation models in K562
 
-Transfer learning of CLIPNET (trained in LCLs) to K562
+Transfer learning of CLIPNET (trained in LCLs) to K562.
+
+Scripts to download/preprocess data are in `data_processing`. Scripts to transfer learn CLIPNET models to K562 are in `clipnet_transfer_learning`.
 
 ## Download pretrained models
 
@@ -8,7 +10,7 @@ Transfer learning of CLIPNET (trained in LCLs) to K562
 
 ```bash
 for fold in {1..9};
-do wget https://zenodo.org/records/11196189/files/fold_${fold}.h5 -P ../models/clipnet_k562/;
+do wget https://zenodo.org/records/11196189/files/fold_${fold}.h5 -P models/clipnet_k562/;
 done
 ```
 
@@ -16,7 +18,7 @@ done
 
 ```bash
 wget https://www.encodeproject.org/files/ENCFF976FHE/@@download/ENCFF976FHE.tar.gz
-tar -xvf ENCFF976FHE.tar.gz -C ../models/procapnet_k562/
+tar -xvf ENCFF976FHE.tar.gz -C models/procapnet_k562/
 rm ENCFF976FHE.tar.gz
 ```
 
