@@ -1,7 +1,4 @@
-### Code here is modified from Jacob's Schreiber's
-### implementation of BPNet, called BPNet-lite:
-### https://github.com/jmschrei/bpnet-lite/
-
+# ProCapNet class
 
 import numpy as np
 import torch
