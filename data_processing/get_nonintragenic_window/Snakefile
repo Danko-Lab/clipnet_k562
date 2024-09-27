@@ -53,12 +53,12 @@ rule crossmap_hg38_to_hg19:
         nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed.gz"),
         prom=os.path.join(WORKDIR, "k562_procap_prom.bed.gz"),
     output:
-        os.path.join(WORKDIR, "k562_procap_nonprom_hg19.bed.gz"),
-        os.path.join(WORKDIR, "k562_procap_prom_hg19.bed.gz"),
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom_hg19.bed.gz"),
+        prom=os.path.join(WORKDIR, "k562_procap_prom_hg19.bed.gz"),
     shell:
         """
-        CrossMap.py bed {input.liftover} {input.nonprom} | bgzip > {output}
-        CrossMap.py bed {input.liftover} {input.prom} | bgzip > {output}
+        CrossMap.py bed {input.liftover} {input.nonprom} | bgzip > {output.nonprom}
+        CrossMap.py bed {input.liftover} {input.prom} | bgzip > {output.prom}
         """
 
 

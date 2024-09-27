@@ -11,7 +11,7 @@
 #SBATCH --mail-user=ayh8@cornell.edu
 #SBATCH --array=5-9
 
-# Script to run the training of the model on the CBSU GPU node
+# SLURM cript to run the training of the model on the CBSU GPU node
 
 #mamba init
 conda activate clipnet
