@@ -4,7 +4,7 @@ import os
 # Define master rule (forces Snakemake to generate all missing files)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/coords/"
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
 REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
 WORKDIR = "/workdir/ayh8/data/k562/"
 fold_assignments = "../data_fold_assignments.csv"
@@ -32,7 +32,7 @@ rule proseq_all:  # A master rule that ensures all the other rules run
 
 rule unpack_windows:
     input:
-        os.path.join(DATADIR, "k562_procap_nonintragenic_tss_1kb_windows.bed.gz"),
+        os.path.join(DATADIR, "coords/k562_procap_nonintragenic_tss_1kb_windows.bed.gz"),
     output:
         os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
     shell:
