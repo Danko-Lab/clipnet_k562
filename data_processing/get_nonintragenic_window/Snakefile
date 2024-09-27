@@ -38,20 +38,20 @@ rule get_nonpromoters:
         peaks=peaks,
         promoters=os.path.join(REFDIR, "ENCODE/GRCh38-PLS.bed.gz"),
     output:
-        prom=os.path.join(WORKDIR, "k562_procap_prom.bed.gz"),
-        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed.gz"),
+        prom=os.path.join(WORKDIR, "k562_procap_prom.bed"),
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
     shell:
         """
-        bedtools intersect -a {input.peaks} -b {input.promoters} -wa | bgzip > {output.prom}
-        bedtools intersect -a {input.peaks} -b {input.promoters} -v | bgzip > {output.nonprom}
+        bedtools intersect -a {input.peaks} -b {input.promoters} -wa > {output.prom}
+        bedtools intersect -a {input.peaks} -b {input.promoters} -v > {output.nonprom}
         """
 
 
 rule crossmap_hg38_to_hg19:
     input:
         liftover=os.path.join(REFDIR, "hg38ToHg19.over.chain.gz"),
-        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed.gz"),
-        prom=os.path.join(WORKDIR, "k562_procap_prom.bed.gz"),
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
+        prom=os.path.join(WORKDIR, "k562_procap_prom.bed"),
     output:
         nonprom=os.path.join(WORKDIR, "k562_procap_nonprom_hg19.bed.gz"),
         prom=os.path.join(WORKDIR, "k562_procap_prom_hg19.bed.gz"),
