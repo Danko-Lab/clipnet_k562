@@ -42,8 +42,8 @@ rule get_nonpromoters:
         nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
     shell:
         """
-        bedtools intersect -a {input.peaks} -b {input.promoters} -wa > {output.prom}
-        bedtools intersect -a {input.peaks} -b {input.promoters} -v > {output.nonprom}
+        bedtools intersect -a {input.peaks} -b {input.promoters} -wa | cut -f1-3 > {output.prom}
+        bedtools intersect -a {input.peaks} -b {input.promoters} -v | cut -f1-3 > {output.nonprom}
         """
 
 
