@@ -5,7 +5,7 @@ import os
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/coords/"
-REFDIR = "/fs/cbsubscb17/storage/data/hg38/"
+REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
 WORKDIR = "/workdir/ayh8/data/k562/"
 fold_assignments = "../data_fold_assignments.csv"
 FOLDS = 10
@@ -41,14 +41,9 @@ rule unpack_windows:
 
 rule unpack_bigwigs:
     input:
-        os.path.join(
-            REFDIR,
-            "k562/proseq/Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_{strand}.rpm.bw",
-        ),
+        os.path.join(REFDIR, "K562_LC_1-2_QC_end_all-merge.{strand}.bw"),
     output:
-        os.path.join(
-            WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_{strand}.rpm.bw"
-        ),
+        os.path.join(WORKDIR, "K562_LC_1-2_QC_end_all-merge.{strand}.bw"),
     shell:
         "rsync {input} {output}"
 
@@ -56,9 +51,7 @@ rule unpack_bigwigs:
 rule get_proseq_signal:
     input:
         windows=os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
-        bw=os.path.join(
-            WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_{strand}.rpm.bw"
-        ),
+        bw=os.path.join(WORKDIR, "K562_LC_1-2_QC_end_all-merge.{strand}.bw"),
     output:
         os.path.join(WORKDIR, "k562_proseq_{strand}.txt"),
     shell:

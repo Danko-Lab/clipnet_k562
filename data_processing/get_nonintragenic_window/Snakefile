@@ -47,27 +47,10 @@ rule get_nonpromoters:
         """
 
 
-rule filter_inactive_genes:
-    input:
-        genes=os.path.join(REFDIR, "k562/proseq/denr_transcript_abundance_rpb.bed.gz"),
-    params:
-        threshold=1,
-    output:
-        os.path.join(WORKDIR, "denr_transcript_active.bed.gz"),
-    shell:
-        """
-        gunzip -c {input} | \
-            awk '$6 > {params.threshold}' | \
-            sort-bed - | \
-            bedtools merge | \
-            bgzip > {output}
-        """
-
-
 rule exclude_intragenic_peaks:
     input:
         nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed.gz"),
-        genes=os.path.join(WORKDIR, "denr_transcript_active.bed.gz"),
+        genes=os.path.join(DATADIR, "denr_greater_than_1rpb_tx.bed.gz"),
     output:
         os.path.join(WORKDIR, "k562_procap_nonintragenic.bed.gz"),
     shell:

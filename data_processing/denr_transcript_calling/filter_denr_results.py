@@ -25,13 +25,17 @@ df["start"] = df.start - 1
 pl_tx = df[df.strand == "+"]
 mn_tx = df[df.strand == "-"]
 
-with pyBigWig.open("Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_plus.bw") as bw:
+with pyBigWig.open(
+    "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.plus.bw"
+) as bw:
     pl_rpk = [
         get_rpk(bw, row.chrom, row.start, row.end)
         for _, row in tqdm.tqdm(pl_tx.iterrows(), total=pl_tx.shape[0])
     ]
 
-with pyBigWig.open("Sample_K562UNT_121109_proseq_1.fastq.gz.na_QC_minus.bw") as bw:
+with pyBigWig.open(
+    "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.minus.bw"
+) as bw:
     mn_rpk = [
         get_rpk(bw, row.chrom, row.start, row.end)
         for _, row in tqdm.tqdm(mn_tx.iterrows(), total=mn_tx.shape[0])
