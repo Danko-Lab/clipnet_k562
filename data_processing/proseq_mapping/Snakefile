@@ -96,7 +96,7 @@ rule proseq_map:
     shell:
         """
         bash {params.proseq2} \
-            --SE \
+            -SE \
             --SE_READ RNA_3prime \
             --bwa-index {input.bwaindex} \
             -c {input.chrominfo} \
