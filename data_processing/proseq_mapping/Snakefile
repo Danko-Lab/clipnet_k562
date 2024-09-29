@@ -104,5 +104,6 @@ rule proseq_map:
             -T {params.tmpdir} \
             -P \
             --thread={params.thread}
-        cp -r {params.workdir} {params.outdir}
+        mkdir -p {params.outdir}
+        cp {params.workdir}/* {params.outdir}
         """
