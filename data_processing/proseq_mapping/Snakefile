@@ -63,7 +63,7 @@ rule copy_bwt:
 
 rule copy_fp:
     input:
-        os.path.join(DATADIR, "Sample_K562UNT_121109_proseq_1.fastq.gz"),
+        os.path.join(DATADIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na.fastq.gz"),
     output:
         os.path.join(WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz"),
     shell:
@@ -77,7 +77,9 @@ rule copy_fp:
 
 rule proseq_map:
     input:
-        reads=os.path.join(WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz"),
+        reads=os.path.join(
+            WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na.fastq.gz"
+        ),
         bwaindex=os.path.join(WORKDIR, "hg38.rRNA.fa"),
         chrominfo=os.path.join(WORKDIR, "hg38.rRNA.chrom.sizes"),
         bwafiles=[os.path.join(WORKDIR, "hg38.rRNA.fa.%s" % ext) for ext in bwa],
@@ -86,7 +88,7 @@ rule proseq_map:
         input_prefix=os.path.join(WORKDIR, "Sample_K562UNT_121109_proseq_1"),
         workdir=os.path.join(WORKDIR, "ayh8_remap"),
         tmpdir=os.path.join(WORKDIR, "tmp"),
-        outdir=os.path.join(DATADIR, "ayh8_remap"),
+        outdir=os.path.join(DATADIR, "ayh8_remap",
         thread=8,
     resources:
         load=15,
