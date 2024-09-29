@@ -10,8 +10,8 @@ DATADIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq/"
 REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/hg38/"
 proseq2 = "~/proseq2.0/proseq2.0.bsh"
 
-pl = os.path.join(DATADIR, "ayh8_remap", "Sample_K562UNT_092112_proseq_1_QC_plus.bw")
-mn = os.path.join(DATADIR, "ayh8_remap", "Sample_K562UNT_092112_proseq_1_QC_minus.bw")
+pl = os.path.join(DATADIR, "ayh8_remap", "Sample_K562UNT_121109_proseq_1_QC_plus.bw")
+mn = os.path.join(DATADIR, "ayh8_remap", "Sample_K562UNT_121109_proseq_1_QC_minus.bw")
 done = [os.path.join(WORKDIR, "done.txt")]
 bwa = ["amb", "ann", "bwt", "pac", "sa"]
 
