@@ -5,7 +5,7 @@ import os
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
-REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/"
+REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/hg38/"
 WORKDIR = "/workdir/ayh8/data/k562/"
 fold_assignments = "../data_fold_assignments.csv"
 FOLDS = 10
