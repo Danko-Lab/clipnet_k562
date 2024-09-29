@@ -88,7 +88,7 @@ rule proseq_map:
         input_prefix=os.path.join(WORKDIR, "Sample_K562UNT_121109_proseq_1"),
         workdir=os.path.join(WORKDIR, "ayh8_remap"),
         tmpdir=os.path.join(WORKDIR, "tmp"),
-        outdir=DATADIR,
+        outdir=os.path.join(DATADIR, "ayh8_remap"),
         thread=8,
     resources:
         load=15,
