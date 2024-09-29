@@ -77,9 +77,7 @@ rule copy_fp:
 
 rule proseq_map:
     input:
-        reads=os.path.join(
-            WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na.fastq.gz"
-        ),
+        reads=os.path.join(WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz"),
         bwaindex=os.path.join(WORKDIR, "hg38.rRNA.fa"),
         chrominfo=os.path.join(WORKDIR, "hg38.rRNA.chrom.sizes"),
         bwafiles=[os.path.join(WORKDIR, "hg38.rRNA.fa.%s" % ext) for ext in bwa],
