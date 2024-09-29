@@ -16,4 +16,4 @@
 #mamba init
 conda activate clipnet
 cd /home2/ayh8/clipnet_k562/clipnet_transfer_learning
-python transfer_learn_k562_proseq.py $SLURM_ARRAY_TASK_ID 0
+time python transfer_learn_k562_proseq.py $SLURM_ARRAY_TASK_ID 0
