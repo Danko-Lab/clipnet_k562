@@ -54,7 +54,7 @@ rule copy_bwt:
         [os.path.join(REFDIR, "bwa-0.7.13-r1126/hg38.rRNA.fa.%s" % ext) for ext in bwa],
     params:
         os.path.join(REFDIR, "bwa-0.7.13-r1126/hg38.rRNA.fa.*"),
-        os.path.join(WORKDIR, "seq_merged"),
+        WORKDIR,
     output:
         [os.path.join(WORKDIR, "hg38.rRNA.fa.%s" % ext) for ext in bwa],
     shell:
