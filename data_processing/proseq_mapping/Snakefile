@@ -97,12 +97,12 @@ rule proseq_map:
         """
         bash {params.proseq2} \
             -SE \
-            --SE_READ RNA_3prime \
-            --bwa-index {input.bwaindex} \
+            -i {input.bwaindex} \
             -c {input.chrominfo} \
             -I {params.input_prefix} \
             -O {params.workdir} \
             -T {params.tmpdir} \
+            -P \
             --thread={params.thread}
         cp -r {params.workdir} {params.outdir}
         """
