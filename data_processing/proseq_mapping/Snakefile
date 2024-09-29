@@ -93,16 +93,8 @@ rule proseq_map:
     resources:
         load=15,
     output:
-        pl=os.path.join(
-            DATADIR,
-            "ayh8_remap",
-            "Sample_K562UNT_121109_proseq_1_QC_end_plus.bw",
-        ),
-        mn=os.path.join(
-            DATADIR,
-            "ayh8_remap",
-            "Sample_K562UNT_121109_proseq_1_QC_end_minus.bw",
-        ),
+        pl,
+        mn,
     shell:
         """
         bash {params.proseq2} \
