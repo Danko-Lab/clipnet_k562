@@ -1,0 +1,129 @@
+import os
+import json
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+WORKDIR = "/workdir/ayh8/data/k562/"
+DATADIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq/"
+REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/hg38/"
+proseq2 = "~/proseq2.0/"
+
+pl = os.path.join(
+    DATADIR, "ayh8_remap", "Sample_K562UNT_092112_proseq_1_dedup_QC_end_plus.bw"
+)
+mn = os.path.join(
+    DATADIR, "ayh8_remap", "Sample_K562UNT_092112_proseq_1_dedup_QC_end_minus.bw"
+)
+done = [os.path.join(WORKDIR, "done.txt")]
+
+bwa = ["amb", "ann", "bwt", "pac", "sa"]
+with open("../../spec/adapter_spec.json", "r") as f:
+    adapter = json.load(f)
+
+
+rule all:
+    input:
+        pl,
+        mn,  # + done,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Unpack and rename files
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule unpack_fa:
+    input:
+        os.path.join(REFDIR, "hg38.rRNA.fa.gz"),
+        os.path.join(REFDIR, "hg38.rRNA.chrom.sizes"),
+    output:
+        os.path.join(WORKDIR, "hg38.rRNA.fa"),
+        os.path.join(WORKDIR, "hg38.rRNA.chrom.sizes"),
+    shell:
+        """
+        gunzip -c {input[0]} > {output[0]}
+        cp {input[1]} {output[1]}
+        """
+
+
+rule copy_bwt:
+    input:
+        [os.path.join(REFDIR, "bwa-0.7.13-r1126/hg38.rRNA.fa.%s" % ext) for ext in bwa],
+    params:
+        os.path.join(REFDIR, "bwa-0.7.13-r1126/hg38.rRNA.fa.*"),
+        os.path.join(WORKDIR, "seq_merged"),
+    output:
+        [os.path.join(WORKDIR, "hg38.rRNA.fa.%s" % ext) for ext in bwa],
+    shell:
+        "parallel cp {{}} {params[1]} ::: {params[0]}"
+
+
+rule copy_fp:
+    input:
+        os.path.join(DATADIR, "Sample_K562UNT_121109_proseq_1.fastq.gz"),
+    output:
+        os.path.join(WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz"),
+    shell:
+        "cp {input} {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Map libraries
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule proseq_map:
+    input:
+        reads=os.path.join(
+            WORKDIR, "Sample_K562UNT_121109_proseq_1.fastq.gz.na.fastq.gz"
+        ),
+        bwaindex=os.path.join(WORKDIR, "hg38.rRNA.fa"),
+        chrominfo=os.path.join(WORKDIR, "hg38.rRNA.chrom.sizes"),
+        bwafiles=[os.path.join(WORKDIR, "hg38.rRNA.fa.%s" % ext) for ext in bwa],
+    params:
+        proseq2=proseq2,
+        input_prefix=os.path.join(WORKDIR, "Sample_K562UNT_121109_proseq_1"),
+        workdir=os.path.join(WORKDIR, "ayh8_remap"),
+        tmpdir=os.path.join(WORKDIR, "tmp"),
+        outdir=DATADIR,
+        UMI1=adapter["UMI1"],
+        UMI2=adapter["UMI2"],
+        ADAPT1=adapter["ADAPT1"],
+        ADAPT2=adapter["ADAPT2"],
+        thread=4,
+    resources:
+        load=15,
+    output:
+        pl=os.path.join(
+            DATADIR,
+            "ayh8_remap",
+            "Sample_K562UNT_121109_proseq_1_dedup_QC_end_plus.bw",
+        ),
+        mn=os.path.join(
+            DATADIR,
+            "ayh8_remap",
+            "Sample_K562UNT_121109_proseq_1_dedup_QC_end_minus.bw",
+        ),
+    shell:
+        """
+        bash {params.proseq2} \
+            -SE \
+            -i {input.bwaindex} \
+            -c {input.chrominfo} \
+            -I {params.input_prefix} \
+            -O {params.workdir} \
+            -T {params.tmpdir} \
+            -3 \
+            --ADAPT1={params.ADAPT1} \
+            --ADAPT2={params.ADAPT2} \
+            --UMI1={params.UMI1} \
+            --UMI2={params.UMI2} \
+            --thread={params.thread}
+        cp -r {params.workdir} {params.outdir}
+        """
