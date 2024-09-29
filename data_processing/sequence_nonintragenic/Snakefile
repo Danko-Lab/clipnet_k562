@@ -5,7 +5,7 @@ import os
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
-REFDIR = "/fs/cbsubscb17/storage/data/hg19/"
+REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/"
 WORKDIR = "/workdir/ayh8/data/k562/"
 fold_assignments = "../data_fold_assignments.csv"
 FOLDS = 10
@@ -48,18 +48,18 @@ rule unpack_windows:
 
 rule unpack_fa:
     input:
-        os.path.join(REFDIR, "male.hg19.fasta.gz"),
+        os.path.join(REFDIR, "hg38.rRNA.fa.gz"),
     resources:
         load=1,
     output:
-        os.path.join(WORKDIR, "hg19.fa"),
+        os.path.join(WORKDIR, "hg38.rRNA.fa"),
     shell:
         "gunzip -c {input} > {output}"
 
 
 rule get_window_sequences:
     input:
-        fa=os.path.join(WORKDIR, "hg19.fa"),
+        fa=os.path.join(WORKDIR, "hg38.rRNA.fa"),
         bed=os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
     resources:
         load=1,
