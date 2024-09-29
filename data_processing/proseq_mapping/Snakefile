@@ -92,11 +92,7 @@ rule proseq_map:
         workdir=os.path.join(WORKDIR, "ayh8_remap"),
         tmpdir=os.path.join(WORKDIR, "tmp"),
         outdir=DATADIR,
-        UMI1=adapter["UMI1"],
-        UMI2=adapter["UMI2"],
-        ADAPT1=adapter["ADAPT1"],
-        ADAPT2=adapter["ADAPT2"],
-        thread=4,
+        thread=8,
     resources:
         load=15,
     output:
@@ -113,13 +109,12 @@ rule proseq_map:
     shell:
         """
         bash {params.proseq2} \
-            -SE \
+            --SE_READ=RNA_3prime \
             -i {input.bwaindex} \
             -c {input.chrominfo} \
             -I {params.input_prefix} \
             -O {params.workdir} \
             -T {params.tmpdir} \
-            -3 \
             --ADAPT1={params.ADAPT1} \
             --ADAPT2={params.ADAPT2} \
             --UMI1={params.UMI1} \
