@@ -47,6 +47,7 @@ rule get_nonpromoters:
         """
 
 
+# Not currenly used b/c data is all in hg38. This is for the K562 data that was mapped to hg19
 rule crossmap_hg38_to_hg19:
     input:
         liftover=os.path.join(REFDIR, "hg38ToHg19.over.chain.gz"),
@@ -64,8 +65,10 @@ rule crossmap_hg38_to_hg19:
 
 rule exclude_intragenic_peaks:
     input:
-        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom_hg19.bed"),
-        genes=os.path.join(DATADIR, "denr_greater_than_1rpb_tx.bed.gz"),
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
+        genes=os.path.join(
+            REFDIR, "k562/proseq/ayh8_remap/denr_greater_than_1rpb_tx.bed.gz"
+        ),
     output:
         os.path.join(WORKDIR, "k562_procap_nonintragenic.bed"),
     shell:
@@ -74,7 +77,7 @@ rule exclude_intragenic_peaks:
 
 rule merge_prom_nonprom:
     input:
-        prom=os.path.join(WORKDIR, "k562_procap_prom_hg19.bed"),
+        prom=os.path.join(WORKDIR, "k562_procap_prom.bed"),
         nonprom=os.path.join(WORKDIR, "k562_procap_nonintragenic.bed"),
     output:
         nonintragenic_peaks,

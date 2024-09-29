@@ -5,10 +5,10 @@
 # BiocManager::install("TxDb.Hsapiens.UCSC.hg19.knownGene")
 library(tidyr)
 library(DENR)
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-hg19_txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 main_chromosomes <- paste0("chr", c(as.character(1:22), "X", "Y"))
-txdb <- keepSeqlevels(hg19_txdb, main_chromosomes, pruning.mode = "coarse")
+txdb <- keepSeqlevels(txdb, main_chromosomes, pruning.mode = "coarse")
 
 # Load the transcript data
 gr_ds <- GenomicFeatures::transcripts(txdb, c("tx_name", "gene_id"))
@@ -27,8 +27,8 @@ gr_ds$key <- paste0(
 
 # Set the bin size and bigwig file paths
 bsize <- 250
-bwp <- "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.plus.bw"
-bwm <- "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.minus.bw"
+bwp <- "Sample_K562UNT_121109_proseq_1_QC_plus.bw"
+bwm <- "Sample_K562UNT_121109_proseq_1_QC_minus.bw"
 
 # Call transcript abundance using uniform profile
 tq <- transcript_quantifier(
@@ -44,29 +44,29 @@ tq <- fit(tq = tq)
 head(transcript_abundance(tq))
 
 # Call transcript abundance using shape profile
-tsp <- transcript_shape_profile(
-    transcripts = gr_ds,
-    bigwig_plus = bwp,
-    bigwig_minus = bwm,
-    bin_size = bsize,
-    linear_head_length = 500,
-    linear_tail_length = 500,
-    min_transcript_length = 2000
-)
-tq_shape <- apply_shape_profile(tq, tsp)
-tq_shape <- fit(tq_shape)
-ta_shape <- transcript_abundance(tq_shape)
+#tsp <- transcript_shape_profile(
+#    transcripts = gr_ds,
+#    bigwig_plus = bwp,
+#    bigwig_minus = bwm,
+#    bin_size = bsize,
+#    linear_head_length = 500,
+#    linear_tail_length = 500,
+#    min_transcript_length = 2000
+#)
+#tq_shape <- apply_shape_profile(tq, tsp)
+#tq_shape <- fit(tq_shape)
+#ta_shape <- transcript_abundance(tq_shape)
 
 bed <- separate_wider_delim(
     transcript_abundance(tq),
     #ta_shape,
     cols="transcript_name",
     delim=":",
-    names=c("chrom", "start", "end", "strand", "tx_name")
+    names=c("chrom", "start", "end", "tx_name", "strand")
 )
 write.table(
     bed,
-    file="./denr_transcript_abundance.bed",
+    file="/fs/cbsubscb17/storage/data/hg38/k562/proseq/denr_transcript_abundance.bed",
     quote=FALSE,
     row.names=FALSE,
     col.names=FALSE,

@@ -5,7 +5,7 @@ import json
 # Define master rule (forces Snakemake to generate all missing files)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-WORKDIR = "/workdir/ayh8/data/k562/"
+WORKDIR = "/workdir/ayh8/data/k562/proseq/"
 DATADIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq/"
 REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/hg38/"
 proseq2 = "~/proseq2.0/proseq2.0.bsh"

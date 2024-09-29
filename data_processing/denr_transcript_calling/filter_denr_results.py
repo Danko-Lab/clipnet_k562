@@ -9,7 +9,11 @@ def get_rpk(pybw, chrom, start, end):
     return rpb * 1_000 if rpb is not None else 0
 
 
-df = pd.read_csv("denr_transcript_abundance.bed.gz", sep="\t", header=None)
+df = pd.read_csv(
+    "/fs/cbsubscb17/storage/data/hg38/k562/proseq/ayh8_remap/denr_transcript_abundance.bed",
+    sep="\t",
+    header=None,
+)
 df.columns = [
     "chrom",
     "start",
@@ -26,7 +30,8 @@ pl_tx = df[df.strand == "+"]
 mn_tx = df[df.strand == "-"]
 
 with pyBigWig.open(
-    "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.plus.bw"
+    "Sample_K562UNT_121109_proseq_1_QC_plus.bw"
+    # "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.plus.bw"
 ) as bw:
     pl_rpk = [
         get_rpk(bw, row.chrom, row.start, row.end)
@@ -34,7 +39,8 @@ with pyBigWig.open(
     ]
 
 with pyBigWig.open(
-    "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.minus.bw"
+    "Sample_K562UNT_121109_proseq_1_QC_minus.bw"
+    # "/local/workdir/James/PauseEvolution/data/human_K562/K562_LC_1-2_QC_end_all-merge.minus.bw"
 ) as bw:
     mn_rpk = [
         get_rpk(bw, row.chrom, row.start, row.end)
@@ -51,10 +57,20 @@ per_million = df.rpk.sum() / 1_000_000_000
 
 df["rpb"] = df.tx_abundance * per_million
 
-df.to_csv("denr_transcript_abundance_rpb.bed.gz", sep="\t", index=False, header=False)
+df = df[["chrom", "start", "end", "tx_name", "rpb", "strand"]]
+
+df.to_csv(
+    "/fs/cbsubscb17/storage/data/hg38/k562/proseq/ayh8_remap/denr_transcript_abundance_rpb.bed.gz",
+    sep="\t",
+    index=False,
+    header=False,
+)
 df[df["rpb"] >= 1].to_csv(
-    "denr_transcript_abundance_rpb_1.bed.gz", sep="\t", index=False, header=False
+    "/fs/cbsubscb17/storage/data/hg38/k562/proseq/ayh8_remap/denr_transcript_abundance_rpb_1.bed.gz",
+    sep="\t",
+    index=False,
+    header=False,
 )
 
 # Then, run the following script to merge isoforms:
-# gunzip -c denr_transcript_abundance_rpb_1.bed.gz | sort-bed - | bedtools merge | bgzip > denr_greater_than_1rpb_tx.bed.gz
+# gunzip -c denr_transcript_abundance_rpb_1.bed.gz | sort-bed - | bedops -m - | bgzip > denr_greater_than_1rpb_tx.bed.gz
