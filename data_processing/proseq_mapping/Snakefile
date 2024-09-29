@@ -115,10 +115,6 @@ rule proseq_map:
             -I {params.input_prefix} \
             -O {params.workdir} \
             -T {params.tmpdir} \
-            --ADAPT1={params.ADAPT1} \
-            --ADAPT2={params.ADAPT2} \
-            --UMI1={params.UMI1} \
-            --UMI2={params.UMI2} \
             --thread={params.thread}
         cp -r {params.workdir} {params.outdir}
         """
