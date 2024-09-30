@@ -106,16 +106,16 @@ class MPRAGen(Sequence):
         batch_indices = self.index[
             index * self.batch_size : (index + 1) * self.batch_size
         ]
-        X = [x[batch_indices, :, :] for x in self.X]
+        X = [self.X[batch_indices, :, :]
         y = self.y[batch_indices]
         if self.rc_augmentation and random.random() > 0.5:
-            X = [x[:, ::-1, ::-1] for x in X]
+            X = X[:, ::-1, ::-1]
         if self.max_jitter > 0:
             jitter = random.randint(0, self.max_jitter)
-            X = [x[:, jitter : self.in_window + jitter, :] for x in X]
+            X = X[:, jitter : self.in_window + jitter, :]
         else:
-            X = [x[:, self.trim : X.shape[1] - self.trim, :] for x in X]
-        X = [tf.convert_to_tensor(x.copy(), dtype=tf.float32) for x in X]
+            X = X[:, self.trim : X.shape[1] - self.trim, :]
+        X = tf.convert_to_tensor(X.copy(), dtype=tf.float32)
         y = tf.convert_to_tensor(y.copy(), dtype=tf.float32)
         return X, y
 
