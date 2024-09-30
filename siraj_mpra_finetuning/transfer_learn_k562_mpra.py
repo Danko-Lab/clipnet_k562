@@ -62,6 +62,7 @@ val_gen = mpra_gen.MPRAGen(*val_args)
 
 # Load the reference and alternative models
 outdir = Path(f"../models/clipnet_k562_mpra/f{fold}/")
+outdir.mkdir(parents=True, exist_ok=True)
 
 base_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
