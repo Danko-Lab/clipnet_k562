@@ -81,7 +81,7 @@ class MPRAGen(Sequence):
         )
         self.steps_per_epoch = len(self.y) // batch_size
         self.in_window = in_window
-        self.trim = (self.X.shape[1] - in_window) // 2
+        self.trim = (self.X[0].shape[1] - in_window) // 2
         assert max_jitter <= self.trim, (
             "Max jitter must be less than or equal to the inferred max jitter."
             + f"{max_jitter} > {self.trim}"
