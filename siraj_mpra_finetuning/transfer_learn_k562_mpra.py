@@ -49,7 +49,7 @@ def warmup_lr(epoch, lr):
 
 
 # Create data loaders for training and validation
-data_fp = "../data/mpra/processed_k562_mpra_data_clipnet_ft.csv.gz"
+data_fp = "../../data/k562_mpra/processed_k562_mpra_data_clipnet_ft.csv.gz"
 
 train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
 val_folds = [fold % 9 + 1]
@@ -82,7 +82,7 @@ for layer in mpra_net.layers:
         layer.trainable = True
 
 # Compile the model
-mpra_net_filepath = str(outdir.joinpath("mpra_net{epoch:02d}.tf"))
+mpra_net_filepath = str(outdir.joinpath("mpra_net{epoch:02d}.h5"))
 chkpt = tf.keras.callbacks.ModelCheckpoint(
     mpra_net_filepath, verbose=0, save_best_only=True
 )

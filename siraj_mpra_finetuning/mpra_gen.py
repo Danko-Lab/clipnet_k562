@@ -20,14 +20,21 @@ import tensorflow as tf
 from tensorflow.keras.utils import Sequence
 
 
-def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
+def load_data(
+    data_fp: str,
+    folds: list,
+    cores=8,
+    reverse_complement=False,
+    model_type="regression",
+):
     """
     Load a single, unfolded dataset. Use reverse_complement=True to load dataset
     reverse complemented.
     """
     # load data and check dimensions
     print(f"Loading data from {data_fp}.")
-    data = pd.read_csv(data_fp).dropna()
+    data = pd.read_csv(data_fp)
+    data = data[data.active_K562 == 1]
     # Filter data to only include the specified folds
     data = data[data["fold"].isin(folds)]
     # print(include[0])
@@ -38,12 +45,14 @@ def load_data(data_fp: str, folds: list, cores=8, reverse_complement=False):
         ],
         axis=0,
     )
-    y = np.concatenate(
-        [
-            np.log(data.mean_RNA_alt_K562 / data.mean_Plasmid_alt_K562),
-            np.log(data.mean_RNA_ref_K562 / data.mean_Plasmid_ref_K562),
-        ]
-    )
+    if model_type == "regression":
+        y = data.zscore_effect_size.values
+    elif model_type == "classification":
+        y = data.emVar_K562.values
+    else:
+        raise ValueError(
+            f"Model type {model_type} must be 'regression' or 'classification'."
+        )
     if reverse_complement:
         X = [utils.rc_twohot_het(x) for x in X]
     # output datasets
@@ -59,6 +68,7 @@ class MPRAGen(Sequence):
         in_window=1000,
         max_jitter=100,
         rc_augmentation=True,
+        model_type="regression",
         swap_alleles=True,
         shuffle=True,
     ):
@@ -66,22 +76,21 @@ class MPRAGen(Sequence):
         self.rc_augmentation = rc_augmentation
         self.swap_alleles = swap_alleles
         self.shuffle = shuffle
-        X, y = load_data(data_fp, folds)
-        assert X[0].shape == X[1].shape, (
+        self.model_type = model_type
+        self.X, self.y = load_data(data_fp, folds, model_type=self.model_type)
+        assert self.X[0].shape == self.X[1].shape, (
             "Reference and alternative sequence shapes must match."
-            + f"{X[0].shape} != {X[1].shape}"
+            + f"{self.X[0].shape} != {self.X[1].shape}"
         )
-        self.steps_per_epoch = len(y) // batch_size
-        self.X = X
-        self.y = y
+        self.steps_per_epoch = len(self.y) // batch_size
         self.in_window = in_window
-        self.trim = (X.shape[1] - in_window) // 2
+        self.trim = (self.X.shape[1] - in_window) // 2
         assert max_jitter <= self.trim, (
             "Max jitter must be less than or equal to the inferred max jitter."
             + f"{max_jitter} > {self.trim}"
         )
         self.max_jitter = max_jitter
-        self.index = np.arange(len(y))
+        self.index = np.arange(len(self.y))
         self.on_epoch_end()
 
     def __len__(self):
