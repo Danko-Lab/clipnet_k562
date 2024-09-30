@@ -91,7 +91,7 @@ for layer in mpra_net.layers:
         layer.trainable = True
 
 # Compile the model
-mpra_net_filepath = str(outdir.joinpath("mpra_net{epoch:02d}.h5"))
+mpra_net_filepath = str(outdir.joinpath("mpra_net{epoch:02d}.tf"))
 chkpt = tf.keras.callbacks.ModelCheckpoint(
     mpra_net_filepath, verbose=0, save_best_only=True
 )
