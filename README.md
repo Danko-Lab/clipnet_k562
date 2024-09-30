@@ -2,7 +2,7 @@
 
 Transfer learning of CLIPNET (trained in LCLs) to K562.
 
-Scripts to download/preprocess data are in `data_processing`. Scripts to transfer learn CLIPNET models to K562 are in `clipnet_transfer_learning`.
+Scripts to download/process K562 PRO-cap data for transfer learning are in `data_processing`. Scripts to transfer learn CLIPNET models to K562 are in `clipnet_transfer_learning`.
 
 ## Download pretrained models
 
