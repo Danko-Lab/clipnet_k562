@@ -81,8 +81,8 @@ mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=out
 tf.keras.backend.clear_session()
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
-    loss="binary_crossentropy",
-    metrics=["f1_score", tf.keras.metrics.AUC(curve="PR")],
+    loss=tf.keras.losses.binary_crossentropy,
+    metrics=[tf.keras.metrics.F1Score, tf.keras.metrics.AUC(curve="PR")],
 )
 for layer in mpra_net.layers:
     if isinstance(layer, tf.keras.layers.BatchNormalization):
