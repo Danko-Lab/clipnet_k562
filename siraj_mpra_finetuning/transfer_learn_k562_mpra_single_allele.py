@@ -41,7 +41,7 @@ def warmup_lr(epoch, lr):
     """
     print(f"LEARNING RATE = {lr}")
     if epoch < 1:
-        return lr / 100
+        return lr / 10
     elif epoch == 1:
         return lr * 10
     else:
@@ -49,7 +49,7 @@ def warmup_lr(epoch, lr):
 
 
 # Create data loaders for training and validation
-data_fp = "../../data/k562_mpra/processed_k562_mpra_data_clipnet_ft.csv.gz"
+data_fp = "../data/mpra/processed_k562_mpra_data_clipnet_ft.csv.gz"
 
 train_folds = [i for i in range(10) if i not in [fold, fold % 9 + 1, 0]]
 val_folds = [fold % 9 + 1]
@@ -63,21 +63,12 @@ val_gen = mpra_gen.MPRAGen(*val_args)
 # Load the reference and alternative models
 outdir = Path(f"../models/clipnet_k562_mpra/f{fold}/")
 
-ref_model = tf.keras.models.load_model(
+base_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
-for layer in ref_model.layers:
-    layer._name = layer.name + str("_ref")
-
-alt_model = tf.keras.models.load_model(
-    f"../models/clipnet_k562/fold_{fold}.h5", compile=False
-)
-for layer in alt_model.layers:
-    layer._name = layer.name + str("_alt")
 
 # Create a new model that outputs the log2 fold change
-output = ref_model.output[1] - alt_model.output[1]
-mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=output)
+mpra_net = tf.keras.Model(inputs=base_model.input, outputs=base_model.output[1])
 tf.keras.backend.clear_session()
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),

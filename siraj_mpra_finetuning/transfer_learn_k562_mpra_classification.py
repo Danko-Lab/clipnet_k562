@@ -22,26 +22,13 @@ gpu = int(sys.argv[2])
 nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
 
 
-def corr(x, y, pseudocount=1e-6):
-    """
-    Computes Pearson's r between x and y. Pseudocount ensures non-zero denominator.
-    """
-    mx = tf.math.reduce_mean(x)
-    my = tf.math.reduce_mean(y)
-    xm, ym = x - mx, y - my
-    num = tf.math.reduce_mean(tf.multiply(xm, ym))
-    den = tf.math.reduce_std(xm) * tf.math.reduce_std(ym) + pseudocount
-    r = tf.math.maximum(tf.math.minimum(num / den, 1), -1)
-    return r
-
-
 def warmup_lr(epoch, lr):
     """
     Learning rate warmup schedule.
     """
     print(f"LEARNING RATE = {lr}")
     if epoch < 1:
-        return lr / 100
+        return lr / 10
     elif epoch == 1:
         return lr * 10
     else:
@@ -57,32 +44,24 @@ print(f"Training on folds {train_folds} and validating on fold {val_folds}.")
 
 train_args = [data_fp, train_folds, rnn_v10.batch_size]
 val_args = [data_fp, val_folds, rnn_v10.batch_size]
-train_gen = mpra_gen.MPRAGen(*train_args)
-val_gen = mpra_gen.MPRAGen(*val_args)
+train_gen = mpra_gen.MPRAGen(*train_args, model_type="classification")
+val_gen = mpra_gen.MPRAGen(*val_args, model_type="classification")
 
 # Load the reference and alternative models
 outdir = Path(f"../models/clipnet_k562_mpra/f{fold}/")
+outdir.mkdir(parents=True, exist_ok=True)
 
-ref_model = tf.keras.models.load_model(
+base_model = tf.keras.models.load_model(
     f"../models/clipnet_k562/fold_{fold}.h5", compile=False
 )
-for layer in ref_model.layers:
-    layer._name = layer.name + str("_ref")
-
-alt_model = tf.keras.models.load_model(
-    f"../models/clipnet_k562/fold_{fold}.h5", compile=False
-)
-for layer in alt_model.layers:
-    layer._name = layer.name + str("_alt")
 
 # Create a new model that outputs the log2 fold change
-output = ref_model.output[1] - alt_model.output[1]
-mpra_net = tf.keras.Model(inputs=[ref_model.input, alt_model.input], outputs=output)
+mpra_net = tf.keras.Model(inputs=base_model.input, outputs=base_model.output[1])
 tf.keras.backend.clear_session()
 mpra_net.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
-    loss="mse",
-    metrics=["mae", corr],
+    loss="binary_crossentropy",
+    metrics=["f1_score", tf.keras.metrics.AUC(curve="PR")],
 )
 for layer in mpra_net.layers:
     if isinstance(layer, tf.keras.layers.BatchNormalization):
@@ -91,7 +70,7 @@ for layer in mpra_net.layers:
         layer.trainable = True
 
 # Compile the model
-mpra_net_filepath = str(outdir.joinpath("mpra_net.h5"))
+mpra_net_filepath = str(outdir.joinpath("mpra_net{epoch:02d}.h5"))
 chkpt = tf.keras.callbacks.ModelCheckpoint(
     mpra_net_filepath, verbose=0, save_best_only=True
 )
