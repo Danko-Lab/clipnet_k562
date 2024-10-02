@@ -27,8 +27,8 @@ gr_ds$key <- paste0(
 
 # Set the bin size and bigwig file paths
 bsize <- 250
-bwp <- "Sample_K562UNT_121109_proseq_1_QC_plus.bw"
-bwm <- "Sample_K562UNT_121109_proseq_1_QC_minus.bw"
+bwp <- "K562_proseq_G156_GC_plus.bw"
+bwm <- "K562_proseq_G156_GC_minus.bw"
 
 # Call transcript abundance using uniform profile
 tq <- transcript_quantifier(
@@ -44,29 +44,28 @@ tq <- fit(tq = tq)
 head(transcript_abundance(tq))
 
 # Call transcript abundance using shape profile
-#tsp <- transcript_shape_profile(
-#    transcripts = gr_ds,
-#    bigwig_plus = bwp,
-#    bigwig_minus = bwm,
-#    bin_size = bsize,
-#    linear_head_length = 500,
-#    linear_tail_length = 500,
-#    min_transcript_length = 2000
-#)
-#tq_shape <- apply_shape_profile(tq, tsp)
-#tq_shape <- fit(tq_shape)
-#ta_shape <- transcript_abundance(tq_shape)
+tsp <- transcript_shape_profile(
+    transcripts = gr_ds,
+    bigwig_plus = bwp,
+    bigwig_minus = bwm,
+    bin_size = bsize,
+    linear_head_length = 500,
+    linear_tail_length = 500,
+    min_transcript_length = 2000
+)
+tq_shape <- apply_shape_profile(tq, tsp)
+tq_shape <- fit(tq_shape)
+ta_shape <- transcript_abundance(tq_shape)
 
 bed <- separate_wider_delim(
-    transcript_abundance(tq),
-    #ta_shape,
+    ta_shape,
     cols="transcript_name",
     delim=":",
     names=c("chrom", "start", "end", "tx_name", "strand")
 )
 write.table(
     bed,
-    file="/fs/cbsubscb17/storage/data/hg38/k562/proseq/denr_transcript_abundance.bed",
+    file="/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/denr_transcript_abundance.bed",
     quote=FALSE,
     row.names=FALSE,
     col.names=FALSE,

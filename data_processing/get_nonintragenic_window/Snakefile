@@ -67,7 +67,7 @@ rule exclude_intragenic_peaks:
     input:
         nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
         genes=os.path.join(
-            REFDIR, "k562/proseq/ayh8_remap/denr_greater_than_1rpb_tx.bed.gz"
+            REFDIR, "k562/proseq_dreg_datasets/denr_greater_than_1rpb_tx.bed.gz"
         ),
     output:
         os.path.join(WORKDIR, "k562_procap_nonintragenic.bed"),
