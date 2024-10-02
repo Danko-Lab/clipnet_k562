@@ -9,6 +9,7 @@ REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/hg38/"
 WORKDIR = "/workdir/ayh8/data/k562/"
 fold_assignments = "../data_fold_assignments.csv"
 FOLDS = 10
+samples = ["G1", "G5", "G6"]
 
 output = [
     os.path.join(DATADIR, f"k562_data_folds/k562_sequence_nonintragenic_{fold}.npz")
@@ -113,6 +114,8 @@ rule numpify_fasta:
         fa=os.path.join(
             DATADIR, "k562_data_folds/k562_sequence_nonintragenic_{fold}.fa.gz"
         ),
+    params:
+        samples=range(len(samples)),
     output:
         npz=os.path.join(
             DATADIR, "k562_data_folds/k562_sequence_nonintragenic_{fold}.npz"
@@ -126,4 +129,7 @@ rule numpify_fasta:
         import utils
 
         seq_array = utils.get_twohot_fasta_sequences(input.fa, cores=1)
-        np.savez_compressed(output.npz, seq_array)
+
+        # Duplicate the sequence array for each sample
+        concat = np.concatenate([seq_array for _ in params.samples], axis=0)
+        np.savez_compressed(output.npz, concat)
