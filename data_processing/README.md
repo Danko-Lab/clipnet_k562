@@ -32,3 +32,7 @@ cd ./sequence
 bash make.sh
 cd ../
 ```
+
+## PRO-seq data processing
+
+All other pipelines are for processing data for a K562 PRO-seq model that is still in-progress (if you have a need for such a model or want to explore sequence -> pausing relationships, please email me to discuss).
