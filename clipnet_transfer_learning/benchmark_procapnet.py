@@ -1,15 +1,11 @@
 import glob
 import os
-import sys
 
 import h5py
 import numpy as np
 import procapnet
 import torch
 from tangermeme.io import extract_loci
-from tangermeme.predict import predict
-
-sys.path.append("../")
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -31,10 +27,20 @@ FOLDS = [
     ["chr18", "chr19", "chr22", "chrX", "chrY"],
 ]
 
-ref_genome_path = "../../data/hg38.fa"
-bw = "../"
+bed_path = "../../data/k562_procap_pairedPeak_autosomes.bed.gz"
+genome_path = "../../data/hg38.fa"
+pl_bw = "../../data/k562/k562_procap_pl.bigWig"
+mn_bw = "../../data/k562/k562_procap_mn.bigWig"
 
-
+loci_folds = [
+    extract_loci(
+        loci=bed_path,
+        sequences=genome_path,
+        signals=[pl_bw, mn_bw],
+        chrom=fold,
+    )
+    for fold in FOLDS
+]
 
 
 # alt_pred = []
