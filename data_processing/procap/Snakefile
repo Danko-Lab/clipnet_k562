@@ -14,11 +14,13 @@ output = [
     os.path.join(DATADIR, f"k562_data_folds/k562_procap_{fold}.npz")
     for fold in range(FOLDS)
 ]
+merged_bw = expand(os.path.join(RAWDIR, "k562_procap_{pm}.rpm.bigWig"), pm=["pl", "mn"])
 
 
 rule procap_all:  # A master rule that ensures all the other rules run
     input:
         output,
+        merged_bw,
     params:
         WORKDIR,
     shell:
@@ -88,6 +90,17 @@ rule rpm_bedgraph:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+rule bedSort:
+    input:
+        os.path.join(WORKDIR, "k562_procap_{pm}_sort.bedGraph"),
+    params:
+        chromsizes=os.path.join(RAWDIR, "hg38.withrDNA.chrom.sizes"),
+    output:
+        os.path.join(RAWDIR, "k562_procap_{pm}.rpm.bigWig"),
+    shell:
+        "bedGraphToBigWig {input} {params} {output}"
+
+
 rule bedgraph_to_bigwig:
     input:
         os.path.join(WORKDIR, "k562_procap_{pm}.rpm.bedGraph"),
@@ -96,9 +109,7 @@ rule bedgraph_to_bigwig:
     output:
         os.path.join(WORKDIR, "k562_procap_{pm}.rpm.bigWig"),
     shell:
-        """
-        bedGraphToBigWig {input} {params} {output}
-        """
+        "bedGraphToBigWig {input} {params} {output}"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

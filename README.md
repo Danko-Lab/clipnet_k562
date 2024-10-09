@@ -28,48 +28,48 @@ rm ENCFF976FHE.tar.gz
 conda activate clipnet
 cd /home2/ayh8/clipnet/
 
-mkdir -p ../clipnet_k562/predictions/
+mkdir -p ../predictions/k562/
 python predict_ensemble.py \
-    ../clipnet_k562/data/k562_data_folds/k562_sequence_0.fa.gz \
-    ../clipnet_k562/predictions/k562_predictions_0.h5 \
+    ../data/k562_data_folds/k562_sequence_0.fna.gz \
+    ../predictions/k562/k562_predictions_0.h5 \
     --model_dir ../clipnet_k562/models/clipnet_k562 \
     --gpu 0
 
-mkdir -p ../clipnet_k562/predictions/ensemble_test/
+mkdir -p ../predictions/k562/ensemble_test/
 for i in {1..9}; do
     python predict_individual_model.py \
         ../clipnet_k562/models/clipnet_k562/fold_${i}.h5 \
-        ../clipnet_k562/data/k562_data_folds/k562_sequence_0.fa.gz \
-        ../clipnet_k562/predictions/ensemble_test/k562_predictions_${i}.h5 \
-        --gpu 0;
+        ../data/k562_data_folds/k562_sequence_0.fna.gz \
+        ../predictions/k562/ensemble_test/k562_predictions_${i}.h5 \
+        --gpu 1;
 done
 
-mkdir -p ../clipnet_k562/predictions/individual_test/
+mkdir -p ../predictions/k562/individual_test/
 for i in {1..9}; do
     python predict_individual_model.py \
         ../clipnet_k562/models/clipnet_k562/fold_${i}.h5 \
-        ../clipnet_k562/data/k562_data_folds/k562_sequence_${i}.fa.gz \
-        ../clipnet_k562/predictions/individual_test/k562_predictions_${i}.h5 \
+        ../data/k562_data_folds/k562_sequence_${i}.fna.gz \
+        ../predictions/k562/individual_test/k562_predictions_${i}.h5 \
         --gpu 0;
 done
 
 python calculate_performance_metrics.py \
-    ../clipnet_k562/predictions/k562_predictions_0.h5 \
-    ../clipnet_k562/data/k562_data_folds/k562_procap_0.npz \
-    ../clipnet_k562/predictions/k562_performance_0.h5
+    ../predictions/k562/k562_predictions_0.h5 \
+    ../data/k562_data_folds/k562_procap_0.npz \
+    ../predictions/k562/k562_performance_0.h5
 
 for i in {1..9}; do
     python calculate_performance_metrics.py \
-        ../clipnet_k562/predictions/ensemble_test/k562_predictions_${i}.h5 \
-        ../clipnet_k562/data/k562_data_folds/k562_procap_0.npz \
-        ../clipnet_k562/predictions/ensemble_test/k562_performance_${i}.h5
+        ../predictions/k562/ensemble_test/k562_predictions_${i}.h5 \
+        ../data/k562_data_folds/k562_procap_0.npz \
+        ../predictions/k562/ensemble_test/k562_performance_${i}.h5
 done
 
 for i in {1..9}; do
     python calculate_performance_metrics.py \
-        ../clipnet_k562/predictions/individual_test/k562_predictions_${i}.h5 \
-        ../clipnet_k562/data/k562_data_folds/k562_procap_${i}.npz \
-        ../clipnet_k562/predictions/individual_test/k562_performance_${i}.h5
+        ../predictions/k562/individual_test/k562_predictions_${i}.h5 \
+        ../data/k562_data_folds/k562_procap_${i}.npz \
+        ../predictions/k562/individual_test/k562_performance_${i}.h5
 done
 ```
 
@@ -81,7 +81,7 @@ cd /home2/ayh8/clipnet/
 
 mkdir -p ../predictions/k562/
 python predict_ensemble.py \
-    ../data/k562_data_folds/k562_sequence_nonintragenic_0.fa.gz \
+    ../data/k562_data_folds/k562_sequence_nonintragenic_0.fna.gz \
     ../predictions/k562/k562_proseq_predictions_0.h5 \
     --model_dir ../clipnet_k562/models/clipnet_k562_proseq \
     --gpu 0
@@ -100,7 +100,7 @@ cd /home2/ayh8/clipnet/
 
 mode=profile
 python calculate_deepshap.py \
-    ../clipnet_k562/data/k562_data_folds/k562_centered.fa.gz \
+    ../data/k562_data_folds/k562_data_folds/k562_centered.fna.gz \
     ../clipnet_k562/attributions/k562_deepshap_${mode}.npz \
     ../clipnet_k562/attributions/k562_seqs_onehot.npz \
     --model_dir ../clipnet_k562/models/clipnet_k562 \
@@ -115,7 +115,7 @@ cd /home2/ayh8/clipnet/
 
 mode=profile
 python calculate_deepshap.py \
-    ../clipnet_k562/data/k562_data_folds/k562_centered.fa.gz \
+    ../data/k562_data_folds/k562_data_folds/k562_centered.fna.gz \
     ../clipnet_k562/attributions/k562_deepshap_${mode}.npz \
     ../clipnet_k562/attributions/k562_seqs_onehot.npz \
     --model_dir ../clipnet_k562/models/clipnet_k562 \

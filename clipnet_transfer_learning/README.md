@@ -17,3 +17,4 @@ Then the following scripts can be used to train the model:
 Other scripts are for training a PRO-seq model in K562 cells (still in-progress).
 
 Unless you want to replicate the results of the study, you should not need to run these scripts. The pre-trained model weights are available on Zenodo at https://zenodo.org/records/11196189.
+
