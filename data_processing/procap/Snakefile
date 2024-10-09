@@ -90,7 +90,7 @@ rule rpm_bedgraph:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-rule bedSort:
+rule save_merged_bw:
     input:
         os.path.join(WORKDIR, "k562_procap_{pm}_sort.bedGraph"),
     params:
