@@ -5,7 +5,7 @@ import os
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-DATADIR = "fs/cbsubscb17/storage/projects/CLIPNET/data/k562/coords/"
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/coords/"
 WORKDIR = "/workdir/ayh8/data/k562/procap/"
 RAWDIR = "/fs/cbsubscb17/storage/data/hg38/k562/procap/"
 
