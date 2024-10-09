@@ -72,7 +72,7 @@ rule save_merged_bw:
     input:
         os.path.join(WORKDIR, "k562_procap_{pm}_sort.bedGraph"),
     params:
-        chromsizes=os.path.join(RAWDIR, "hg38.withrDNA.chrom.sizes"),
+        chromsizes="/fs/cbsubscb17/storage/data/hg38/hg38.chrom.sizes",
     output:
         os.path.join(RAWDIR, "k562_procap_{pm}.bigWig"),
     shell:
