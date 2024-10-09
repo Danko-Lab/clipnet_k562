@@ -7,11 +7,14 @@ import os
 
 DATADIR = "../../data/coords/"
 WORKDIR = "../../data/tmp/"
-RAWDIR = "../../data/raw/"
+RAWDIR = "/fs/cbsubscb17/storage/data/hg38/k562/procap/"
 
 peaks = os.path.join(DATADIR, "k562_procap_pairedPeak_autosomes.bed.gz")
 windows = os.path.join(DATADIR, "k562_procap_tss_1kb_windows.bed.gz")
 centered_windows = os.path.join(DATADIR, "k562_procap_tss_1kb_centered_windows.bed.gz")
+merged_bigwigs = expand(
+    os.path.join(RAWDIR, "k562_procap_{pm}.rpm.bigWig"), pm=["pl", "mn"]
+)
 
 
 rule all:  # A master rule that ensures all the other rules run
@@ -63,6 +66,17 @@ rule bedSort:
         bedSort {input.pl} {output.pl}
         bedSort {input.mn} {output.mn}
         """
+
+
+rule save_merged_bw:
+    input:
+        os.path.join(WORKDIR, "k562_procap_{pm}_sort.bedGraph"),
+    params:
+        chromsizes=os.path.join(RAWDIR, "hg38.withrDNA.chrom.sizes"),
+    output:
+        os.path.join(RAWDIR, "k562_procap_{pm}.rpm.bigWig"),
+    shell:
+        "bedGraphToBigWig {input} {params} {output}"
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

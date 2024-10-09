@@ -6,7 +6,7 @@ import os
 
 DATADIR = "../../data/"
 WORKDIR = "../../data/tmp/"
-RAWDIR = "../../data/raw/"
+RAWDIR = "/fs/cbsubscb17/storage/data/hg38/k562/procap/"
 fold_assignments = "../data_fold_assignments.csv"
 FOLDS = 10
 
@@ -88,17 +88,6 @@ rule rpm_bedgraph:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Convert bedgraph to bigwig
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-rule save_merged_bw:
-    input:
-        os.path.join(WORKDIR, "k562_procap_{pm}_sort.bedGraph"),
-    params:
-        chromsizes=os.path.join(RAWDIR, "hg38.withrDNA.chrom.sizes"),
-    output:
-        os.path.join(RAWDIR, "k562_procap_{pm}.rpm.bigWig"),
-    shell:
-        "bedGraphToBigWig {input} {params} {output}"
 
 
 rule bedgraph_to_bigwig:
