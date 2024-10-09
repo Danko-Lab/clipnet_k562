@@ -67,6 +67,17 @@ rule bedSort:
         """
 
 
+rule save_merged_bw:
+    input:
+        os.path.join(WORKDIR, "k562_procap_{pm}_sort.bedGraph"),
+    params:
+        chromsizes=os.path.join(RAWDIR, "hg38.withrDNA.chrom.sizes"),
+    output:
+        os.path.join(RAWDIR, "k562_procap_{pm}.rpm.bigWig"),
+    shell:
+        "bedGraphToBigWig {input} {params} {output}"
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RPM normalize bedgraph files
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
