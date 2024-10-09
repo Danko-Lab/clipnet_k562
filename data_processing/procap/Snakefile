@@ -14,7 +14,7 @@ output = [
     os.path.join(DATADIR, f"k562_data_folds/k562_procap_{fold}.npz")
     for fold in range(FOLDS)
 ]
-merged_bw = expand(os.path.join(RAWDIR, "k562_procap_{pm}.rpm.bigWig"), pm=["pl", "mn"])
+merged_bw = expand(os.path.join(RAWDIR, "k562_procap_{pm}.bigWig"), pm=["pl", "mn"])
 
 
 rule procap_all:  # A master rule that ensures all the other rules run
