@@ -5,8 +5,8 @@ import os
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-DATADIR = "../../data/coords/"
-WORKDIR = "../../data/tmp/"
+DATADIR = "fs/cbsubscb17/storage/projects/CLIPNET/data/k562/coords/"
+WORKDIR = "/workdir/ayh8/data/k562/procap/"
 RAWDIR = "/fs/cbsubscb17/storage/data/hg38/k562/procap/"
 
 peaks = os.path.join(DATADIR, "k562_procap_pairedPeak_autosomes.bed.gz")
