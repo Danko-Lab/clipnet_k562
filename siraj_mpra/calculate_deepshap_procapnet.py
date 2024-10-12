@@ -1,3 +1,9 @@
+"""
+This script benchmarks the ProCapNet model on the K562 ProCap dataset.
+It requires the ProCapNet model to be trained and saved in the models directory.
+This also requires the ProCapNet environment to be installed.
+"""
+
 import argparse
 import glob
 
@@ -6,10 +12,12 @@ import procapnet
 import pyfastx
 import torch
 import tqdm
-from bpnetlite.bpnet import CountWrapper, ProfileWrapper
 from bpnetlite.attribute import deep_lift_shap
-#from tangermeme.deep_lift_shap import deep_lift_shap
+from bpnetlite.bpnet import CountWrapper, ProfileWrapper
+
+# from tangermeme.deep_lift_shap import deep_lift_shap
 from tangermeme.utils import one_hot_encode
+
 
 def save_deepshap_results(onehot_seqs, scores, scores_path, onehot_seqs_path=None):
     if len(onehot_seqs.shape) != 3 or onehot_seqs.shape[1] != 4:
@@ -61,7 +69,6 @@ def main():
         device = f"cuda:{args.gpu}"
     else:
         device = "cpu"
-    import torch
 
     # Load model
     model_path = glob.glob(f"{args.model_dir}/*.torch")[0]
@@ -92,7 +99,6 @@ def main():
     ).to(torch.float32)
     if args.gpu is not None:
         ohe = ohe.cuda()
-    
 
     # Calculate attributions
     attributions = deep_lift_shap(

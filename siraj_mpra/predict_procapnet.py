@@ -1,3 +1,9 @@
+"""
+This script benchmarks the ProCapNet model on the K562 ProCap dataset.
+It requires the ProCapNet model to be trained and saved in the models directory.
+This also requires the ProCapNet environment to be installed.
+"""
+
 import glob
 import os
 import sys

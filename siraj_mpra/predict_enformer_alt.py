@@ -1,3 +1,7 @@
+"""
+This script requires the enformer-pytorch package to be installed. (+ tangermeme)
+"""
+
 import h5py
 import numpy as np
 import pyfastx
