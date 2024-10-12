@@ -1,11 +1,13 @@
 import glob
 import os
 
-import h5py
 import numpy as np
+import pandas as pd
 import procapnet
 import torch
+from scipy.stats import pearsonr
 from tangermeme.io import extract_loci
+from tangermeme.predict import predict
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -27,7 +29,7 @@ FOLDS = [
     ["chr18", "chr19", "chr22", "chrX", "chrY"],
 ]
 
-bed_path = "../../data/k562_procap_pairedPeak_autosomes.bed.gz"
+bed_path = "../../data/k562/k562_procap_pairedPeak_autosomes.bed.gz"
 genome_path = "../../data/hg38.fa"
 pl_bw = "../../data/k562/k562_procap_pl.bigWig"
 mn_bw = "../../data/k562/k562_procap_mn.bigWig"
@@ -37,17 +39,27 @@ loci_folds = [
         loci=bed_path,
         sequences=genome_path,
         signals=[pl_bw, mn_bw],
-        chrom=fold,
+        chroms=fold,
+        verbose=True,
     )
     for fold in FOLDS
 ]
 
+predictions = [
+    predict(model, data[0].type(torch.float32), verbose=True)
+    for model, data in zip(models, loci_folds)
+]
+scaled_predictions = [
+    np.exp(p[0].reshape(p[0].shape[0], -1)) * np.exp(p[1]) for p in predictions
+]
+observed = [np.abs(fold[1]).reshape(fold[1].shape[0], -1) for fold in loci_folds]
 
-# alt_pred = []
-# for model in tqdm.tqdm(models):
-#    alt_pred.append(predict(model, torch.tensor(alt_ohe).to(torch.float)))
+log_quantity_correlation = [
+    pearsonr(np.log(pred.sum(axis=1) + 1e-3), np.log(obs.sum(axis=1) + 1e-3))[0]
+    for pred, obs in zip(scaled_predictions, observed)
+]
 
-alt_quantity = np.array([p[1][:, 0].numpy() for p in alt_pred])
-
-with h5py.File("../data/mpra/k562_mpra_snps_2114_alt_procapnet_folds.h5", "w") as f:
-    f.create_dataset("alt", data=np.array(alt_quantity), compression="gzip")
+profile_correlation = [
+    pd.DataFrame(pred).corrwith(pd.DataFrame(obs), axis=1)
+    for pred, obs in zip(scaled_predictions, observed)
+]
