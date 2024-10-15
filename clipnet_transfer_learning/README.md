@@ -14,6 +14,8 @@ Then the following scripts can be used to train the model:
 
 `utils.py` contains utility functions for training the model.
 
+`k562_procap_pints_autosomes.bed.gz` are the PINTS calls used to train/evaluate the model (and ProCapNet).
+
 Other scripts are for training a PRO-seq model in K562 cells (still in-progress).
 
 Unless you want to replicate the results of the study, you should not need to run these scripts. The pre-trained model weights are available on Zenodo at https://zenodo.org/records/11196189.
