@@ -17,7 +17,8 @@ done
 ### ProCapNet K562
 
 ```bash
-# NOTE: ProCapNet and CLIPNET use different libraries, so you should install the environment for each model separately.
+# NOTE: ProCapNet and CLIPNET use different libraries,
+# so you should install the environment for each model separately.
 wget https://www.encodeproject.org/files/ENCFF976FHE/@@download/ENCFF976FHE.tar.gz
 tar -xvf ENCFF976FHE.tar.gz -C models/procapnet_k562/
 rm ENCFF976FHE.tar.gz
