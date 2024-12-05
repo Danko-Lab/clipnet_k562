@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import pyfastx
 import tqdm
+import numpy as np
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Define master rule (forces Snakemake to generate all missing files)
@@ -44,18 +45,18 @@ rule get_sequences:
         ref_genome = pyfastx.Fasta(input.fa)
         names = ("chrom", "start", "stop", "name", "y", "strand")
         pausing_index = pd.read_csv(input.bed, header=None, sep="\t", names=names)
-        subsequences = {
-            row["name"]: ref_genome.fetch(
-                row["chrom"],
-                (row["start"] - 500 + 1, row["start"] + 500),
-                strand=row["strand"],
+        subsequences = {}
+        for i, row in tqdm.tqdm(
+            pausing_index.iterrows(),
+            desc="Fetching sequences",
+            total=pausing_index.shape[0],
+        ):
+            rand = np.random.randint(0, 100)
+            interval = (row["start"] - 500 + 1 + rand, row["start"] + 500 + rand)
+            k = f"{row["name"]} {row["chrom"]}:{interval[0]}-{interval[1]} {row["strand"]}"
+            subsequences[k] = ref_genome.fetch(
+                row["chrom"], interval, strand=row["strand"]
             )
-            for i, row in tqdm.tqdm(
-                pausing_index.iterrows(),
-                desc="Fetching sequences",
-                total=pausing_index.shape[0],
-            )
-        }
         with open(output.fa, "w") as f:
             for k, v in tqdm.tqdm(subsequences.items(), desc="Writing sequences"):
                 f.write(f">{k}\n{v}\n")
