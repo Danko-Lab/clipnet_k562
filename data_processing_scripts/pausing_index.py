@@ -78,10 +78,12 @@ def pausing_index_from_bed(
     clean_bed = bed[bed["gene_length"] > min_length]
     pl_bed = clean_bed[clean_bed["strand"] == "+"]
     mn_bed = clean_bed[clean_bed["strand"] == "-"]
-    pl_bed["pausing_index"] = pl_bed.apply(
+    pi = pl_bed.apply(
         lambda x: pausing_index(pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
         axis=1,
     )
+    print(pi.shape)
+    pl_bed["pausing_index"] = pi
     mn_bed["pausing_index"] = mn_bed.apply(
         lambda x: pausing_index(mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
         axis=1,
