@@ -52,7 +52,7 @@ rule unpack_bigwigs:
 rule calculate_pausing_index:
     input:
         pl_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_pl.rpm.bw"),
-        mn_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_mn.rpm.bw")
+        mn_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_mn.rpm.bw"),
         bed=os.path.join(WORKDIR, "denr_greater_than_1rpb_tx.bed"),
     output:
         os.path.join(DATADIR, "pausing_index/k562_pausing_index_{sample}.bed"),
