@@ -69,6 +69,6 @@ rule calculate_merged_pausing_index:
         mn_bw=os.path.join(WORKDIR, "K562_proseq_G156_QC_minus.bw"),
         bed=os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
     output:
-        os.path.join(DATADIR, "pausing_index/k562_pausing_index_merged.bed"),
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_G156.bed"),
     shell:
         "python ../../data_processing_scripts/pausing_index.py {input} {output}"
