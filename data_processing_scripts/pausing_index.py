@@ -102,7 +102,7 @@ def main(pl_bw_fp, mn_bw_fp, bed_fp, out_fp, **kwargs):
     Wraps io functions and pausing_index_from_bed.
     """
     bed = pd.read_csv(bed_fp, sep="\t", header=None)
-    bed.columns = ["chrom", "start", "stop", "name", "strand", "score"]
+    bed.columns = ["chrom", "start", "stop", "name", "score", "strand"]
     pl_bw = pyBigWig.open(pl_bw_fp)
     mn_bw = pyBigWig.open(mn_bw_fp)
     out_bed = pausing_index_from_bed(pl_bw, mn_bw, bed, **kwargs)
