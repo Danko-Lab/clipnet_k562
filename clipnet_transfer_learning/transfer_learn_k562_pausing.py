@@ -97,7 +97,7 @@ new_model.compile(
 outdir = Path(f"../models/clipnet_k562_pausing/f{fold}/")
 model_filepath = str(outdir.joinpath("clipnet_k562_pausing.h5"))
 cp = tf.keras.callbacks.ModelCheckpoint(model_filepath, verbose=0, save_best_only=True)
-early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=20)
+early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=10)
 tqdm_callback = TqdmCallback(verbose=1, bar_format="{l_bar}{bar:10}{r_bar}{bar:-10b}")
 csv_logger = CSVLogger(
     filename=outdir.joinpath("clipnet_k562_pausing.log"),
