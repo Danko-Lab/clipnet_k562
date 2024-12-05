@@ -8,7 +8,7 @@ DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
 # REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
 REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
 WORKDIR = "/workdir/ayh8/data/k562/"
-samples = ["G1", "G5", "G6", "merged"]
+samples = ["G1", "G5", "G6", "G156"]
 
 output = expand(
     os.path.join(DATADIR, "pausing_index/k562_pausing_index_{sample}.bed"),
