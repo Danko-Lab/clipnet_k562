@@ -38,11 +38,9 @@ rule unpack_active_transcripts:
 
 rule unpack_bigwigs:
     input:
-        os.path.join(
-            REFDIR, "K562_proseq_{sample}/K562_proseq_{sample}_QC_{strand}.rpm.bw"
-        ),
+        os.path.join(REFDIR, "K562_proseq_{sample}/K562_proseq_{sample}_QC_{strand}.bw"),
     output:
-        os.path.join(WORKDIR, "K562_proseq_{sample}_QC_{strand}.rpm.bw"),
+        os.path.join(WORKDIR, "K562_proseq_{sample}_QC_{strand}.bw"),
     shell:
         "rsync {input} {output}"
 
