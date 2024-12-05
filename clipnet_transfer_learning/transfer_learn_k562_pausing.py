@@ -1,11 +1,14 @@
 # python transfer_learn_k562_proseq.py $fold $gpu
 
-import json
 import logging
-import math
 import os
 import sys
 from pathlib import Path
+
+import pandas as pd
+import pyfastx
+import tqdm
+from learning_rate_schedules import warmup_lr
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
@@ -15,7 +18,6 @@ from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
 
 sys.path.append("../../clipnet/")
-import cgen
 import clipnet
 import custom_loss
 import rnn_v10
@@ -23,45 +25,24 @@ import rnn_v10
 fold = int(sys.argv[1])
 gpu = int(sys.argv[2])
 
-
-def warmup_lr(epoch, lr):
-    """
-    Learning rate warmup schedule.
-    """
-    print(f"LEARNING RATE = {lr}")
-    if epoch < 1:
-        return lr / 10
-    elif epoch == 1:
-        return lr * 10
-    else:
-        return lr
-
-
-outdir = Path(f"../models/clipnet_k562_pausing/f{fold}/")
-with open(outdir.joinpath("dataset_params.json"), "r") as f:
-    dataset_params = json.load(f)
-steps_per_epoch = math.floor(
-    sum(dataset_params["n_samples_per_train_fold"]) * 2 / rnn_v10.batch_size
-)
-steps_per_val_epoch = math.floor(
-    sum(dataset_params["n_samples_per_val_fold"]) * 2 / rnn_v10.batch_size
-)
-train_args = [
-    dataset_params["train_seq"],
-    dataset_params["train_proseq"],
-    steps_per_epoch,
-    rnn_v10.batch_size,
-    dataset_params["pad"],
+# Load pausing indices
+pausing_index_files = [
+    f"../../data/pausing_index/k562_pausing_index_G{i}.bed" for i in (1, 5, 6)
 ]
-val_args = [
-    dataset_params["val_seq"],
-    dataset_params["val_proseq"],
-    steps_per_val_epoch,
-    rnn_v10.batch_size,
-    dataset_params["pad"],
+names = ("chrom", "start", "stop", "name", "y", "strand")
+pausing_index = pd.concat(
+    [pd.read_csv(fp, header=None, sep="\t", names=names) for fp in pausing_index_files]
+)
+
+# Load sequences
+ref_genome = pyfastx.Fasta("../../data/pausing_index/hg38.fa.gz")
+subsequences = [
+    ref_genome.fetch(
+        row["chrom"], (row["start"] - 500 + 1, row["start"] + 500), strand=row["strand"]
+    )
+    for i, row in tqdm.tqdm(pausing_index.iterrows())
 ]
-train_gen = cgen.CGen(*train_args)
-val_gen = cgen.CGen(*val_args)
+
 
 # Load pretrained model
 nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
@@ -88,10 +69,11 @@ new_model = tf.keras.models.Model(
 new_model.compile(
     optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
     loss="msle",
-    metrics=custom_loss.corr,
+    metrics=custom_loss.corr_log,
 )
 
 # Create callbacks
+outdir = Path(f"../models/clipnet_k562_pausing/f{fold}/")
 model_filepath = str(outdir.joinpath("clipnet_k562_pausing.h5"))
 cp = tf.keras.callbacks.ModelCheckpoint(model_filepath, verbose=0, save_best_only=True)
 early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=20)
@@ -102,6 +84,7 @@ csv_logger = CSVLogger(
     separator=",",
     append=True,
 )
+
 
 # Fit
 fit_model = new_model.fit(

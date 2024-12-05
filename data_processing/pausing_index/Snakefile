@@ -8,8 +8,6 @@ DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
 # REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
 REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
 WORKDIR = "/workdir/ayh8/data/k562/"
-fold_assignments = "../data_fold_assignments.csv"
-FOLDS = 10
 samples = ["G1", "G5", "G6"]
 
 output = expand(

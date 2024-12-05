@@ -1,0 +1,55 @@
+import os
+
+import pyfastx
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
+# REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
+REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
+WORKDIR = "/workdir/ayh8/data/k562/"
+
+output = os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa")
+
+
+rule proseq_all:  # A master rule that ensures all the other rules run
+    input:
+        output,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+rule copy_fa:
+    input:
+        "/fs/cbsubscb17/storage/data/hg38/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz",
+    output:
+        os.path.join(WORKDIR, "pausing_index/hg38.fa.gz"),
+    shell:
+        "rsync --progress "
+
+
+rule calculate_pausing_index:
+    input:
+        bed=os.path.join(DATADIR, "pausing_index/k562_pausing_index_G1.bed"),
+        fa=os.path.join(WORKDIR, "pausing_index/hg38.fa.gz"),
+    output:
+        fa=os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa"),
+    run:
+        ref_genome = pyfastx.Fasta(input.fa)
+        names = ("chrom", "start", "stop", "name", "y", "strand")
+        pausing_index = pd.read_csv(bed, header=None, sep="\t", names=names)
+        subsequences = {
+            row["name"]: ref_genome.fetch(
+                row["chrom"],
+                (row["start"] - 500 + 1, row["start"] + 500),
+                strand=row["strand"],
+            )
+            for i, row in tqdm.tqdm(pausing_index.iterrows())
+        }
+        with open(output.fa, "w") as f:
+            for k, v in subsequences.items():
+                f.write(f">{k}\n{v}\n")
