@@ -94,7 +94,7 @@ opt_hyperparameters = {
 new_model.compile(
     optimizer=optimizer(**opt_hyperparameters),
     loss="msle",
-    metrics=custom_loss.corr,
+    metrics=custom_loss.tf_spearmanr,
 )
 
 # Create callbacks
