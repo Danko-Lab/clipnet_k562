@@ -22,6 +22,7 @@ def pausing_index(
     start,
     stop,
     strand,
+    pseudocount=1,
     promoter_boundaries=(150, 150),
     gene_body_boundaries=(300, 300),
 ):
@@ -59,7 +60,7 @@ def pausing_index(
     )
     if promoter_read_density is None or gene_body_read_density is None:
         return np.nan
-    return promoter_read_density / gene_body_read_density
+    return promoter_read_density / (gene_body_read_density + pseudocount)
 
 
 def pausing_index_from_bed(
@@ -78,13 +79,10 @@ def pausing_index_from_bed(
     clean_bed = bed[bed["gene_length"] > min_length]
     pl_bed = clean_bed[clean_bed["strand"] == "+"]
     mn_bed = clean_bed[clean_bed["strand"] == "-"]
-    print(pl_bed.shape)
-    pi = pl_bed.apply(
+    pl_bed["pausing_index"] = pl_bed.apply(
         lambda x: pausing_index(pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
         axis=1,
     )
-    print(pi)
-    pl_bed["pausing_index"] = pi
     mn_bed["pausing_index"] = mn_bed.apply(
         lambda x: pausing_index(mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
         axis=1,
