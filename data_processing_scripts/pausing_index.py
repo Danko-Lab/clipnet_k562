@@ -22,7 +22,7 @@ def pausing_index(
     start,
     stop,
     strand,
-    pseudocount=1,
+    pseudocount=1e-3,
     promoter_boundaries=(150, 150),
     gene_body_boundaries=(300, 300),
 ):
