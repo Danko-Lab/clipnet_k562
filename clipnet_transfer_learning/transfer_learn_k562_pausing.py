@@ -21,6 +21,11 @@ from tqdm.keras import TqdmCallback
 
 fold = int(sys.argv[1])
 
+# Set VRAM usage to growth:
+gpus = tf.config.experimental.list_physical_devices("GPU")
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
+
 # Load pausing indices
 pausing_index_files = [
     f"../../data/pausing_index/k562_pausing_index_G{i}.bed" for i in (1, 5, 6)
@@ -99,7 +104,6 @@ csv_logger = CSVLogger(
     separator=",",
     append=True,
 )
-
 
 # Fit
 fit_model = new_model.fit(
