@@ -43,7 +43,7 @@ rule get_sequences:
     run:
         ref_genome = pyfastx.Fasta(input.fa)
         names = ("chrom", "start", "stop", "name", "y", "strand")
-        pausing_index = pd.read_csv(bed, header=None, sep="\t", names=names)
+        pausing_index = pd.read_csv(input.bed, header=None, sep="\t", names=names)
         subsequences = {
             row["name"]: ref_genome.fetch(
                 row["chrom"],
