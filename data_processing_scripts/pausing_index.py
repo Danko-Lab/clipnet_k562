@@ -82,7 +82,7 @@ def pausing_index_from_bed(
         lambda x: pausing_index(pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
         axis=1,
     )
-    pi.shape
+    print(pi)
     pl_bed["pausing_index"] = pi
     mn_bed["pausing_index"] = mn_bed.apply(
         lambda x: pausing_index(mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
