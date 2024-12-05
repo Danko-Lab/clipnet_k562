@@ -3,7 +3,7 @@ import tensorflow as tf
 import utils
 
 
-class data_generator(tf.keras.utils.Sequence):
+class DataGenerator(tf.keras.utils.Sequence):
     """
     Data generator for loading training/validation data efficiently.
 

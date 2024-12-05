@@ -5,10 +5,11 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
-import pyfastx
-import tqdm
+import utils
 from learning_rate_schedules import warmup_lr
+from pausing_data_generator import DataGenerator
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
@@ -23,7 +24,6 @@ import custom_loss
 import rnn_v10
 
 fold = int(sys.argv[1])
-gpu = int(sys.argv[2])
 
 # Load pausing indices
 pausing_index_files = [
@@ -35,17 +35,29 @@ pausing_index = pd.concat(
 )
 
 # Load sequences
-ref_genome = pyfastx.Fasta("../../data/pausing_index/hg38.fa.gz")
-subsequences = [
-    ref_genome.fetch(
-        row["chrom"], (row["start"] - 500 + 1, row["start"] + 500), strand=row["strand"]
-    )
-    for i, row in tqdm.tqdm(pausing_index.iterrows())
+twohot = utils.get_twohot_fasta_sequences(
+    "../../data/pausing_index/k562_pausing_index.fa.gz"
+)
+sequences = np.concatenate([twohot for _ in pausing_index_files])
+
+# Partition data into training and validation sets
+test_folds = [fold]
+val_folds = [(fold + 1) % 9 + 1]
+train_folds = [i for i in range(1, 10) if i not in test_folds + val_folds]
+chrom_splits = pd.read_csv("../data_processing/data_fold_assignments.csv")
+train_chroms = [
+    row["chrom"] for i, row in chrom_splits.iterrows() if row["fold"] in train_folds
+]
+val_chroms = [
+    row["chrom"] for i, row in chrom_splits.iterrows() if row["fold"] in val_folds
 ]
 
+train_idx = pausing_index.chrom.isin(train_chroms)
+val_idx = pausing_index.chrom.isin(val_chroms)
+train_gen = DataGenerator(sequences[train_idx], pausing_index.y[train_idx].to_numpy())
+val_gen = DataGenerator(sequences[val_idx], pausing_index.y[val_idx].to_numpy())
 
 # Load pretrained model
-nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=gpu)
 pretrained_model = tf.keras.models.load_model(
     f"../models/clipnet_k562_proseq/fold_{fold}.h5", compile=False
 )
@@ -90,8 +102,8 @@ csv_logger = CSVLogger(
 fit_model = new_model.fit(
     x=train_gen,
     validation_data=val_gen,
-    epochs=rnn_v10.epochs,
-    steps_per_epoch=steps_per_epoch,
+    epochs=100,
+    steps_per_epoch=len(train_gen),
     verbose=0,
     callbacks=[
         cp,
