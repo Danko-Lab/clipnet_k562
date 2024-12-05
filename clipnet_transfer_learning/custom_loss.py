@@ -1,6 +1,7 @@
 """This implements a number of custom loss/metric functions for use in CLIPNET."""
 
 import tensorflow as tf
+from scipy.stats import spearmanr
 
 
 def corr(x, y, pseudocount=1e-6):
@@ -16,11 +17,12 @@ def corr(x, y, pseudocount=1e-6):
     return r
 
 
-def corr_log(x, y, pseudocount=1e-6):
-    """
-    Log transforms x and y before calculating corr.
-    """
-    return corr(tf.math.log(x + pseudocount), tf.math.log(y + pseudocount), pseudocount)
+def tf_spearmanr(x, y):
+    return tf.py_function(
+        spearmanr,
+        [tf.cast(x, tf.float32), tf.cast(y, tf.float32)],
+        Tout=tf.float32,
+    )
 
 
 def corr_loss(x, y, pseudocount=1e-6):
