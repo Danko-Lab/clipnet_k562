@@ -12,16 +12,12 @@ from learning_rate_schedules import warmup_lr
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
+import custom_loss
 import tensorflow as tf
 from pausing_data_generator import DataGenerator
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
-
-sys.path.append("../../clipnet/")
-import clipnet
-import custom_loss
-import rnn_v10
 
 fold = int(sys.argv[1])
 
@@ -78,8 +74,16 @@ new_model = tf.keras.models.Model(
 )
 
 # Compile
+optimizer = tf.keras.optimizers.Adam
+opt_hyperparameters = {
+    "learning_rate": 0.001,
+    "beta_1": 0.9,
+    "beta_2": 0.999,
+    "epsilon": 1e-7,
+}
+
 new_model.compile(
-    optimizer=rnn_v10.optimizer(**rnn_v10.opt_hyperparameters),
+    optimizer=optimizer(**opt_hyperparameters),
     loss="msle",
     metrics=custom_loss.corr_log,
 )
@@ -89,7 +93,6 @@ outdir = Path(f"../models/clipnet_k562_pausing/f{fold}/")
 model_filepath = str(outdir.joinpath("clipnet_k562_pausing.h5"))
 cp = tf.keras.callbacks.ModelCheckpoint(model_filepath, verbose=0, save_best_only=True)
 early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=20)
-training_time = clipnet.TimeHistory()
 tqdm_callback = TqdmCallback(verbose=1, bar_format="{l_bar}{bar:10}{r_bar}{bar:-10b}")
 csv_logger = CSVLogger(
     filename=outdir.joinpath("clipnet_k562_pausing.log"),
