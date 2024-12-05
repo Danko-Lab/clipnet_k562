@@ -15,8 +15,8 @@ REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
 WORKDIR = "/workdir/ayh8/data/k562/"
 
 output = [
-    os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa"),
-    os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa"),
+    os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa.gz"),
+    os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa.gz"),
 ]
 
 
