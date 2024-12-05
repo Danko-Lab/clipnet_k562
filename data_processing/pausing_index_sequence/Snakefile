@@ -90,3 +90,14 @@ rule get_centered_sequences:
         with open(output.fa, "w") as f:
             for k, v in tqdm.tqdm(subsequences.items(), desc="Writing sequences"):
                 f.write(f">{k}\n{v}\n")
+
+
+rule compress:
+    input:
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa"),
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa"),
+    output:
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa.gz"),
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa.gz"),
+    shell:
+        "for f in {input}; do bgzip $f; done"
