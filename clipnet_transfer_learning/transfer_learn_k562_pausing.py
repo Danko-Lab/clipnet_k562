@@ -64,12 +64,16 @@ pretrained_model = tf.keras.models.load_model(
 )
 
 # Create new model architecture
-new_output = layers.BatchNormalization(
-    name="new_batch_normalization",
-)(
-    layers.Dense(1, name="new_dense")(
-        layers.GlobalAvgPool1D(name="new_global_avg_pool_1d")(
-            pretrained_model.get_layer("max_pooling1d_2").output
+new_output = layers.Dropout(0.3, name="name_new_dropout")(
+    layers.Activation("relu", name="new_relu")(
+        layers.BatchNormalization(
+            name="new_batch_normalization",
+        )(
+            layers.Dense(1, name="new_dense")(
+                layers.GlobalAvgPool1D(name="new_global_avg_pool_1d")(
+                    pretrained_model.get_layer("max_pooling1d_2").output
+                )
+            )
         )
     )
 )
