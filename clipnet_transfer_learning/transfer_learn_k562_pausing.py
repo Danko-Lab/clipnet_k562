@@ -9,11 +9,11 @@ import numpy as np
 import pandas as pd
 import utils
 from learning_rate_schedules import warmup_lr
-from pausing_data_generator import DataGenerator
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
+from pausing_data_generator import DataGenerator
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
