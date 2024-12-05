@@ -29,9 +29,7 @@ rule proseq_all:  # A master rule that ensures all the other rules run
 
 rule unpack_active_transcripts:
     input:
-        os.path.join(
-            REFDIR, "k562/proseq_dreg_datasets/denr_greater_than_1rpb_tx.bed.gz"
-        ),
+        os.path.join(REFDIR, "denr_greater_than_1rpb_tx.bed.gz"),
     output:
         os.path.join(WORKDIR, "denr_greater_than_1rpb_tx.bed"),
     shell:
