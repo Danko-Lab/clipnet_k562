@@ -8,7 +8,7 @@ DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
 # REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
 REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
 WORKDIR = "/workdir/ayh8/data/k562/"
-samples = ["G1", "G5", "G6"]
+samples = ["G1", "G5", "G6", "merged"]
 
 output = expand(
     os.path.join(DATADIR, "pausing_index/k562_pausing_index_{sample}.bed"),
@@ -43,6 +43,15 @@ rule unpack_bigwigs:
         "rsync {input} {output}"
 
 
+rule unpack_merged_bigwigs:
+    input:
+        os.path.join(REFDIR, "K562_proseq_G156_QC_{strand}.bw"),
+    output:
+        os.path.join(WORKDIR, "K562_proseq_G156_QC_{strand}.bw"),
+    shell:
+        "rsync {input} {output}"
+
+
 rule calculate_pausing_index:
     input:
         pl_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_plus.bw"),
@@ -50,5 +59,16 @@ rule calculate_pausing_index:
         bed=os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
     output:
         os.path.join(DATADIR, "pausing_index/k562_pausing_index_{sample}.bed"),
+    shell:
+        "python ../../data_processing_scripts/pausing_index.py {input} {output}"
+
+
+rule calculate_merged_pausing_index:
+    input:
+        pl_bw=os.path.join(WORKDIR, "K562_proseq_G156_QC_plus.bw"),
+        mn_bw=os.path.join(WORKDIR, "K562_proseq_G156_QC_minus.bw"),
+        bed=os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
+    output:
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_merged.bed"),
     shell:
         "python ../../data_processing_scripts/pausing_index.py {input} {output}"
