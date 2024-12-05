@@ -29,7 +29,7 @@ rule copy_fa:
     output:
         os.path.join(WORKDIR, "pausing_index/hg38.fa.gz"),
     shell:
-        "rsync --progress "
+        "rsync --progress {input} {output}"
 
 
 rule calculate_pausing_index:
