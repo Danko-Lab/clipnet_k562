@@ -81,7 +81,6 @@ rule get_centered_sequences:
             desc="Fetching sequences",
             total=pausing_index.shape[0],
         ):
-            rand = np.random.randint(0, 100)
             interval = (row["start"] - 500 + 1, row["start"] + 500)
             k = f'{row["name"]} {row["chrom"]}:{interval[0]}-{interval[1]} {row["strand"]}'
             subsequences[k] = ref_genome.fetch(
