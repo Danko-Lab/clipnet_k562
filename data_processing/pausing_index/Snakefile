@@ -1,0 +1,60 @@
+import os
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
+# REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
+REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
+WORKDIR = "/workdir/ayh8/data/k562/"
+fold_assignments = "../data_fold_assignments.csv"
+FOLDS = 10
+samples = ["G1", "G5", "G6"]
+
+output = [
+    os.path.join(DATADIR, f"k562_data_folds/k562_proseq_{fold}.npz")
+    for fold in range(FOLDS)
+]
+
+
+rule proseq_all:  # A master rule that ensures all the other rules run
+    input:
+        output,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+rule unpack_active_transcripts:
+    input:
+        os.path.join(
+            REFDIR, "k562/proseq_dreg_datasets/denr_greater_than_1rpb_tx.bed.gz"
+        ),
+    output:
+        os.path.join(WORKDIR, "denr_greater_than_1rpb_tx.bed"),
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+rule unpack_bigwigs:
+    input:
+        os.path.join(
+            REFDIR, "K562_proseq_{sample}/K562_proseq_{sample}_QC_{strand}.rpm.bw"
+        ),
+    output:
+        os.path.join(WORKDIR, "K562_proseq_{sample}_QC_{strand}.rpm.bw"),
+    shell:
+        "rsync {input} {output}"
+
+
+rule calculate_pausing_index:
+    input:
+        pl_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_pl.rpm.bw"),
+        mn_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_mn.rpm.bw")
+        bed=os.path.join(WORKDIR, "denr_greater_than_1rpb_tx.bed"),
+    output:
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_{sample}.bed"),
+    shell:
+        "python ../../data_processing_scripts/pausing_index.py {input} {output}"

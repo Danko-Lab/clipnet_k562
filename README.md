@@ -4,6 +4,8 @@ Transfer learning of CLIPNET (trained in LCLs) to K562.
 
 Scripts to download/process K562 PRO-cap data for transfer learning are in `data_processing`. Scripts to transfer learn CLIPNET models to K562 are in `clipnet_transfer_learning`. Scripts to benchmark models across loci are in `clipnet_transfer_learning`. Scripts to benchmark models on MPRA variant prediction are in `siraj_mpra`.
 
+The python package requirements for this project are listed in `requirements.txt` and are identical to those used for CLIPNET.
+
 ## Download pretrained models
 
 ### CLIPNET K562

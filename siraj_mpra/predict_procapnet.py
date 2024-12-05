@@ -10,12 +10,13 @@ import sys
 
 import h5py
 import numpy as np
-import procapnet
 import torch
 import tqdm
 from tangermeme.predict import predict
 
 sys.path.append("../")
+sys.path.append("../clipnet_transfer_learning/")
+import procapnet
 import utils
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
