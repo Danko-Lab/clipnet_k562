@@ -111,7 +111,6 @@ fit_model = new_model.fit(
     callbacks=[
         cp,
         early_stopping,
-        training_time,
         tqdm_callback,
         csv_logger,
         LearningRateScheduler(warmup_lr),
