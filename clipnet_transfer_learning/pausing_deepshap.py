@@ -17,7 +17,6 @@ import utils
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
-import clipnet
 import tensorflow as tf
 
 # This will fix an error message for running tf.__version__==2.5
@@ -167,7 +166,9 @@ def main():
 
     # Create explainers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    nn = clipnet.CLIPNET(n_gpus=1, use_specific_gpu=args.gpu)
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
 
     if args.model_fp is not None:
         model_fps = [args.model_fp]
