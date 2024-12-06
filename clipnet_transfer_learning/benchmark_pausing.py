@@ -66,4 +66,16 @@ def predict(model, X, batch_size=64, silence=False):
 y_pred = [predict(model, X) for model in models]
 
 for p in y_pred:
-    print(pearsonr(np.log(p.squeeze() + 1e-6), np.log(y + 1e-6)), spearmanr(p.squeeze(), y))
+    print(
+        pearsonr(np.log(p.squeeze() + 1e-6), np.log(y + 1e-6)),
+        spearmanr(p.squeeze(), y),
+    )
+
+y_pred_mean = np.stack(y_pred, axis=0).mean(axis=0)
+print(
+    pearsonr(np.log(y_pred_mean.squeeze() + 1e-6), np.log(y + 1e-6)),
+    spearmanr(p.squeeze(), y),
+)
+
+# PearsonRResult(statistic=0.5766288425062598, pvalue=0.0)
+# SignificanceResult(statistic=0.6673798094684796, pvalue=0.0)

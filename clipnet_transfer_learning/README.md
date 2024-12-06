@@ -23,3 +23,23 @@ python calculate_fold_params.py $DATADIR $OUTDIR
 GPU=0
 for i in {1..9}; do python transfer_learn_k562.py $i $GPU; done
 ```
+
+We then transfer the PRO-cap model to PRO-seq data:
+
+```bash
+python calculate_fold_params_proseq.py $DATADIR $OUTDIR
+GPU=0
+for i in {1..9}; do python transfer_learn_k562_proseq.py $i $GPU; done
+```
+
+And then the PRO-seq models to predict pausing index at promoters. First, calculate pausing indices and get promoter sequences using pipelines in `data_processing/pausing_index` and `data_processing/pausing_index_sequence`.
+
+```bash
+for i in {1..9}; do python transfer_learn_k562_pausing.py $i; done
+```
+
+Calculate attributions for the pausing model:
+
+```bash
+for i in {1..9}; do python pausing_deepshap.py ../../data/pausing_index/k562_pausing_index_centered.fa.gz ../../data/pausing_index/k562_pausing_index_centered_deepshap_${i}.npz ../../data/k562_pausing_index_centered_ohe.npz --model_fp ../models/clipnet_k562_pausing/fold_${i}.h5; done
+```
