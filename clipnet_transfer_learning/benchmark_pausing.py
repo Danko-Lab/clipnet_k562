@@ -76,6 +76,11 @@ print(
     pearsonr(np.log(y_pred_mean.squeeze() + 1e-6), np.log(y + 1e-6)),
     spearmanr(p.squeeze(), y),
 )
+np.savez_compressed(
+    "../../data/pausing_index/k562_pausing_index_centered_prediction.npz",
+    y_pred=y_pred_mean,
+    y=y,
+)
 
 # PearsonRResult(statistic=0.5766288425062598, pvalue=0.0)
 # SignificanceResult(statistic=0.6673798094684796, pvalue=0.0)
