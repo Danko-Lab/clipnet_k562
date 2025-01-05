@@ -127,8 +127,8 @@ def main():
     parser.add_argument(
         "--gpu",
         type=int,
-        default=None,
-        help="Index of GPU to use (starting from 0). If not invoked, uses CPU.",
+        default=0,
+        help="Index of GPU to use (starting from 0). Use --gpu -1 to use CPU.",
     )
     parser.add_argument(
         "--n_subset",
@@ -168,9 +168,14 @@ def main():
 
     # Create explainers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    gpus = tf.config.experimental.list_physical_devices("GPU")
-    for gpu in gpus:
+    # Set VRAM usage to growth and enable GPU usage
+    if args.gpu >= 0:
+        gpus = tf.config.experimental.list_physical_devices("GPU")
+        gpu = gpus[args.gpu]
         tf.config.experimental.set_memory_growth(gpu, True)
+        tf.config.set_visible_devices(gpu, "GPU")
+    else:
+        tf.config.set_visible_devices([], "GPU")
 
     if args.model_fp is not None:
         model_fps = [args.model_fp]

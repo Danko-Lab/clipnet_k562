@@ -19,12 +19,14 @@ Then the following scripts can be used to train the model:
 To do the transfer learning, first run `calculate_fold_params.py` to calculate the fold parameters. Then run `transfer_learn_k562.py` to train the model:
 
 ```bash
+#DATADIR = where data is stored.
+#OUTDIR = where models will be saved
 python calculate_fold_params.py $DATADIR $OUTDIR
 GPU=0
 for i in {1..9}; do python transfer_learn_k562.py $i $GPU; done
 ```
 
-We then transfer the PRO-cap model to PRO-seq data:
+We then transfer the PRO-cap model to PRO-seq data (unpublished work, not extensively documented here):
 
 ```bash
 python calculate_fold_params_proseq.py $DATADIR $OUTDIR
@@ -32,7 +34,7 @@ GPU=0
 for i in {1..9}; do python transfer_learn_k562_proseq.py $i $GPU; done
 ```
 
-And then the PRO-seq models to predict pausing index at promoters. First, calculate pausing indices and get promoter sequences using pipelines in `data_processing/pausing_index` and `data_processing/pausing_index_sequence`.
+And then the PRO-seq models to predict pausing index at promoters (also not documented here). First, calculate pausing indices and get promoter sequences using pipelines in `data_processing/pausing_index` and `data_processing/pausing_index_sequence`.
 
 ```bash
 for i in {1..9}; do python transfer_learn_k562_pausing.py $i; done
