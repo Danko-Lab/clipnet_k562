@@ -1,6 +1,6 @@
 # Analysis of transcription initiation models in K562
 
-This repo contains code to analyse a couple different transcription initiation models in K562. Notably, we implement transfer learning to adapt CLIPNET models CLIPNET (trained in LCLs) to K562 and compare the ability of CLIPNET to predict MPRA SNP effects against ProCapNet, a transcription initiation model natively trained in K562, and Enformer, a multitask model trained on many K562 epigenetic tracks.
+This repo contains code to analyse a couple different transcription initiation models in K562. Notably, we implement fine tuning to adapt CLIPNET models CLIPNET (trained in LCLs) to K562 and compare the ability of CLIPNET to predict MPRA SNP effects against ProCapNet, a transcription initiation model natively trained in K562, and Enformer, a multitask model trained on many K562 epigenetic tracks.
 
 ## Code dependencies
 
@@ -10,11 +10,11 @@ ProCapNet (https://github.com/kundajelab/ProCapNet) and Enformer (https://github
 
 ## Training data processing
 
-Scripts to download/process K562 PRO-cap data for transfer learning are in `data_processing`. We note that that directory contains a number of pipelines for processing K562 data (including for PRO-seq models that have not yet been published). For more details on the minimal necessary scripts to reproduce the K562 initiation models, please consult the README in that directory.
+Scripts to download/process K562 PRO-cap data for fine tuning are in `data_processing`. We note that that directory contains a number of pipelines for processing K562 data (including for PRO-seq models that have not yet been published). For more details on the minimal necessary scripts to reproduce the K562 initiation models, please consult the README in that directory.
 
-## Transfer learning scripts
+## Fine tuning scripts
 
-Scripts to transfer learn CLIPNET models to K562 and benchmarking their performance at predicting initiation across genomic loci are located in `clipnet_transfer_learning`.
+Scripts to fine tune CLIPNET models to K562 and benchmarking their performance at predicting initiation across genomic loci are located in `clipnet_ft`.
 
 ## Download pretrained models
 
@@ -36,4 +36,8 @@ tar -xvf ENCFF976FHE.tar.gz -C models/procapnet_k562/
 rm ENCFF976FHE.tar.gz
 ```
 
-Scripts to benchmark models on MPRA variant prediction are in `siraj_mpra`.
+## Benchmarking
+
+Scripts to benchmark models on PRO-cap prediction at genomic loci are in `genomic_benchmarks`.
+
+Scripts to benchmark models on MPRA variant effect prediction are in `mpra_benchmarks`.
