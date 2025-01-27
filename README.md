@@ -1,6 +1,6 @@
 # Analysis of transcription initiation models in K562
 
-This repo contains code to analyse a couple different transcription initiation models in K562. Notably, we implement fine tuning to adapt CLIPNET models CLIPNET (trained in LCLs) to K562 and compare the ability of CLIPNET to predict MPRA SNP effects against ProCapNet, a transcription initiation model natively trained in K562, and Enformer, a multitask model trained on many K562 epigenetic tracks.
+This repo contains code to analyse a couple different transcription initiation models in K562. Notably, we implement fine tuning to adapt CLIPNET models (trained in LCLs) to K562 and compare the ability of CLIPNET to predict MPRA SNP effects against ProCapNet, a transcription initiation model natively trained in K562, and Enformer, a multitask model trained on many K562 epigenetic tracks.
 
 ## Code dependencies
 
