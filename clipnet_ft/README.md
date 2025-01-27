@@ -16,40 +16,55 @@ Then the following scripts can be used to train the model:
 
 `ft_k562_reference.py` fine tunes the reference-trained CLIPNET model.
 
-To do the fine tuning, first run `calculate_fold_params.py` to calculate the fold parameters. Then run `ft_k562.py` to train the model:
+To do the fine tuning, download and unpack pre-trained LCL models. Then run `calculate_fold_params.py` to calculate the fold parameters. Finally, run `ft_k562.py` to train the model.
 
 ```bash
-#DATADIR = where data is stored.
-#OUTDIR = where models will be saved
-python calculate_fold_params.py $DATADIR $OUTDIR
+# model download
+mkdir -p ../models/clipnet_lcl/
+for fold in {1..9}; do
+    wget https://zenodo.org/records/10408623/files/fold_${fold}.h5 -P ../models/clipnet_lcl/;
+done
+
+# DATADIR = where data is stored.
+mkdir -p ../models/clipnet_k562/
+python calculate_fold_params.py $DATADIR ../models/clipnet_k562/
 GPU=0
 for i in {1..9}; do python ft_k562.py $i $GPU; done
 ```
 
-We then fine tune the PRO-cap model to PRO-seq data (unpublished work, not extensively documented here):
+We can also fine tune from the reference-trained LCL CLIPNET models:
 
 ```bash
-python calculate_fold_params_proseq.py $DATADIR $OUTDIR
+# model download
+mkdir -p ../models/clipnet_lcl_reference/
+wget https://zenodo.org/records/14037356/files/reference_models.tar
+tar -xvf reference_models.tar -C ../models/clipnet_lcl_reference/ --strip-components=1
+rm reference_models.tar
+
+# DATADIR = where data is stored.
+mkdir -p ../models/clipnet_k562/
+python calculate_fold_params.py $DATADIR ../models/clipnet_k562_reference/
 GPU=0
-for i in {1..9}; do python ft_k562_proseq.py $i $GPU; done
+for i in {1..9}; do python ft_k562_reference.py $i $GPU; done
 ```
 
-And then the PRO-seq models to predict pausing index at promoters (also not documented here). First, calculate pausing indices and get promoter sequences using pipelines in `data_processing/pausing_index` and `data_processing/pausing_index_sequence`.
+## K562 model downloads
+
+The pre-fine tuned models that we use are deposited at Zenodo. These can be downloaded as follows (obviously if you run this you will not need to do your own fine tuning):
+
+For the K562 models fine tuned from the personal CLIPNET LCL models (recommended for general use):
 
 ```bash
-for i in {1..9}; do python ft_k562_pausing.py $i; done
+mkdir -p ../models/clipnet_k562/
+for fold in {1..9}; do
+    wget https://zenodo.org/records/11196189/files/fold_${fold}.h5 -P ../models/clipnet_k562/;
+done
 ```
 
-Calculate attributions for the pausing model:
+For the K562 models fine tuned from the reference-trained CLIPNET LCL models (recommended only if you really want no genetic variation data leakage on genome-wide VEP):
 
 ```bash
-for i in {1..9}; do python pausing_deepshap.py ../../data/pausing_index/k562_pausing_index_centered.fa.gz ../../data/pausing_index/k562_pausing_index_centered_deepshap_${i}.npz --ohe_seq_fp ../../data/k562_pausing_index_centered_ohe.npz --model_fp ../models/clipnet_k562_pausing/fold_${i}.h5; done
-```
-
-Average DeepSHAP files, then calculate MODISCO:
-
-```bash
-cd ../../data/pausing_index/
-time modisco motifs -s k562_pausing_index_centered_ohe.npz -a k562_pausing_index_centered_deepshap.npz -n 1000000 -l 50 -v -o k562_pausing_index_centered_modisco.h5
-time modisco report -i k562_pausing_index_centered_modisco.h5 -o k562_pausing_index_centered_modisco/ -m /home2/ayh8/data/JASPAR/JASPAR2022_CORE_vertebrates_non-redundant_pfms_meme.txt
+mkdir -p ../models/clipnet_k562_reference/
+wget https://zenodo.org/records/14037356/files/clipnet_k562_reference.tar
+tar -xvf clipnet_k562_reference.tar -C ../models/clipnet_k562_test --strip-components=1
 ```

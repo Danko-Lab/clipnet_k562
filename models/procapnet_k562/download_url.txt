@@ -1,4 +1,0 @@
-ProCapNet consists of 6 model folds which are too large to reasonably package
-into a GitHub repo. They can be downloaded from ENCODE:
-
-https://www.encodeproject.org/files/ENCFF976FHE/@@download/ENCFF976FHE.tar.gz

@@ -14,23 +14,25 @@ Scripts to download/process K562 PRO-cap data for fine tuning are in `data_proce
 
 ## Fine tuning scripts
 
-Scripts to fine tune CLIPNET models to K562 and benchmarking their performance at predicting initiation across genomic loci are located in `clipnet_ft`.
+Scripts to fine tune CLIPNET models to K562 are located in `clipnet_ft`. These scripts will presume that the training data have been downloaded from Zenodo or preprocessed per protocols in `data_processing/`
 
 ## Download pretrained models
 
 ### CLIPNET K562
 
+These models are compatible with the scripts in the original CLIPNET repo (simply use `--model_dir` to specify the directory into which these models have been downloaded). For more details, see `clipnet_ft`.
+
 ```bash
-for fold in {1..9};
-do wget https://zenodo.org/records/11196189/files/fold_${fold}.h5 -P models/clipnet_k562/;
+for fold in {1..9}; do
+    wget https://zenodo.org/records/11196189/files/fold_${fold}.h5 -P models/clipnet_k562/;
 done
 ```
 
 ### ProCapNet K562
 
+NOTE: ProCapNet and CLIPNET use different libraries, so you should install the environment for each model separately.
+
 ```bash
-# NOTE: ProCapNet and CLIPNET use different libraries,
-# so you should install the environment for each model separately.
 wget https://www.encodeproject.org/files/ENCFF976FHE/@@download/ENCFF976FHE.tar.gz
 tar -xvf ENCFF976FHE.tar.gz -C models/procapnet_k562/
 rm ENCFF976FHE.tar.gz
