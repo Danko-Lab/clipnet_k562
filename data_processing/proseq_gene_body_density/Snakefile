@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import pyfastx
 import tqdm
+import numpy as np
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Define master rule (forces Snakemake to generate all missing files)
