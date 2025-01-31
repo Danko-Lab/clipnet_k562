@@ -69,39 +69,9 @@ for i, row in snps.iterrows():
             ref_pred.append(ref[fold - 1][i])
             alt_pred.append(alt[fold - 1][i])
 
-clipnet_pytorch = np.load(
-    "/home2/ayh8/data/k562/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_vep_clipnet.npz"
-)["log2fc"]
-clipnet_pytorch_l2 = np.load(
-    "/home2/ayh8/data/k562/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_vep_clipnet.npz"
-)["l2"]
-clipnet_pytorch_500 = np.load(
-    "/home2/ayh8/data/k562/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_500_logfc_clipnet.npz"
-)["arr_0"]
-
-clipnet_pytorch_alpha100_log2fc = np.load(
-    "/home2/ayh8/data/k562/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_vep_clipnet_alpha100.npz"
-)["log2fc"]
-clipnet_pytorch_alpha100_l2 = np.load(
-    "/home2/ayh8/data/k562/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_vep_clipnet_alpha100.npz"
-)["l2"]
-clipnet_pytorch_alpha100_lr_log2fc = np.load(
-    "/home2/ayh8/data/k562/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_vep_clipnet_alpha100_lr0.005.npz"
-)["log2fc"]
-clipnet_pytorch_alpha100_lr_l2 = np.load(
-    "/home2/ayh8/data/k562/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_vep_clipnet_alpha100_lr0.005.npz"
-)["l2"]
-
 pred = pd.DataFrame(
     {
         "fold": folds,
-        "clipnet_pytorch_log2fc": clipnet_pytorch,
-        "clipnet_pytorch_l2": clipnet_pytorch_l2,
-        "clipnet_pytorch_500_log2fc": clipnet_pytorch_500,
-        "clipnet_pytorch_alpha100_log2fc": clipnet_pytorch_alpha100_log2fc,
-        "clipnet_pytorch_alpha100_l2": clipnet_pytorch_alpha100_l2,
-        "clipnet_pytorch_alpha100_lr_log2fc": clipnet_pytorch_alpha100_lr_log2fc,
-        "clipnet_pytorch_alpha100_lr_l2": clipnet_pytorch_alpha100_lr_l2,
         "ref_clipnet_ensemble": ref_ensemble,
         "alt_clipnet_ensemble": alt_ensemble,
         "ref_clipnet_reference_ensemble": ref_ref_ensemble,

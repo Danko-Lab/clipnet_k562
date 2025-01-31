@@ -63,6 +63,40 @@ def pausing_index(
     return promoter_read_density / (gene_body_read_density + pseudocount)
 
 
+def gene_body_density(
+    bw,
+    chrom,
+    start,
+    stop,
+    strand,
+    gene_body_boundaries=(300, 300),
+):
+    """
+    Calculate pausing index for a given region.
+    IMPORTANT: THIS ASSUMES THAT THE BW FILE IS THE CORRECT STRAND (pausing_index_from_bed
+    filters by strand, so this should not be an issue here, but if you use this function
+    elsewhere, please check that the supplied bw file is the correct one).
+    """
+    if strand == "+":
+        gene_body_boundaries = [
+            start + gene_body_boundaries[0],
+            stop - gene_body_boundaries[1],
+        ]
+    elif strand == "-":
+        gene_body_boundaries = [
+            start + gene_body_boundaries[0],
+            stop - gene_body_boundaries[1],
+        ]
+    else:
+        raise ValueError("Strand must be either '+' or '-'")
+    gene_body_read_density = np.abs(
+        np.mean(np.nan_to_num(bw.values(chrom, *gene_body_boundaries)))
+    )
+    if gene_body_read_density is None:
+        return np.nan
+    return gene_body_read_density
+
+
 def pausing_index_from_bed(
     pl_bw,
     mn_bw,
@@ -70,6 +104,7 @@ def pausing_index_from_bed(
     min_length=2000,
     promoter_boundaries=(150, 150),
     gene_body_boundaries=(300, 300),
+    return_gene_body_density=False,
 ):
     """
     Calculate pausing index for all regions in a bed file. (assumes bed file is a
@@ -79,20 +114,43 @@ def pausing_index_from_bed(
     clean_bed = bed[bed["gene_length"] > min_length]
     pl_bed = clean_bed[clean_bed["strand"] == "+"]
     mn_bed = clean_bed[clean_bed["strand"] == "-"]
-    pl_bed["pausing_index"] = pl_bed.apply(
-        lambda x: pausing_index(pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
-        axis=1,
-    )
-    mn_bed["pausing_index"] = mn_bed.apply(
-        lambda x: pausing_index(mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]),
-        axis=1,
-    )
+    if return_gene_body_density:
+        pl_bed["y"] = pl_bed.apply(
+            lambda x: pausing_index(
+                pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]
+            ),
+            axis=1,
+        )
+        mn_bed["y"] = mn_bed.apply(
+            lambda x: pausing_index(
+                mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]
+            ),
+            axis=1,
+        )
+        # TPM normalize:
+        permillion = 1_000_000 / (pl_bed["y"].sum() + mn_bed["y"].sum())
+        pl_bed["y"] = pl_bed["y"] * permillion
+        mn_bed["y"] = mn_bed["y"] * permillion
+    else:
+        pl_bed["y"] = pl_bed.apply(
+            lambda x: gene_body_density(
+                pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]
+            ),
+            axis=1,
+        )
+        mn_bed["y"] = mn_bed.apply(
+            lambda x: gene_body_density(
+                mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]
+            ),
+            axis=1,
+        )
     out_bed = pd.concat([pl_bed, mn_bed])
     out_bed["tss"] = np.where(
         out_bed["strand"] == "+", out_bed["start"], out_bed["stop"]
     )
     out_bed["tss+1"] = out_bed["tss"] + 1
-    return out_bed[["chrom", "tss", "tss+1", "name", "pausing_index", "strand"]]
+
+    return out_bed[["chrom", "tss", "tss+1", "name", "y", "strand"]]
 
 
 def main(pl_bw_fp, mn_bw_fp, bed_fp, out_fp, **kwargs):
@@ -135,5 +193,16 @@ if __name__ == "__main__":
         default=(300, 300),
         help="Number of bp downstream of TSS and upstream of TES to trim off for the gene body.",
     )
+    parser.add_argument(
+        "--return_gene_body_density",
+        action="store_true",
+        help="Return gene body read density instead of pausing index.",
+    )
     args = parser.parse_args()
-    main(args.pl_bw_fp, args.mn_bw_fp, args.bed_fp, args.out_fp)
+    main(
+        args.pl_bw_fp,
+        args.mn_bw_fp,
+        args.bed_fp,
+        args.out_fp,
+        return_gene_body_density=args.return_gene_body_density,
+    )
