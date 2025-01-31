@@ -28,6 +28,15 @@ rule proseq_all:  # A master rule that ensures all the other rules run
         "echo rm -r {params}"
 
 
+rule copy_fa:
+    input:
+        "/fs/cbsubscb17/storage/data/hg38/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz",
+    output:
+        os.path.join(WORKDIR, "initiation/hg38.fa.gz"),
+    shell:
+        "rsync --progress {input} {output}"
+
+
 rule unpack_active_transcripts:
     input:
         os.path.join(REFDIR, "denr_transcript_abundance_rpb_1.bed.gz"),
