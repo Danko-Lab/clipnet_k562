@@ -1,4 +1,5 @@
 import os
+import pyfastx
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Define master rule (forces Snakemake to generate all missing files)
