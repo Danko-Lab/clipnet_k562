@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import pyfastx
+import tadm
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Define master rule (forces Snakemake to generate all missing files)
