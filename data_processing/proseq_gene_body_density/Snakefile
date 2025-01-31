@@ -72,7 +72,7 @@ rule calculate_initiation:
     output:
         os.path.join(DATADIR, "initiation/k562_initiation_{sample}.bed"),
     shell:
-        "python ../../data_processing_scripts/initiation.py {input} --return_gene_body_density {output}"
+        "python ../../data_processing_scripts/pausing_index.py {input} --return_gene_body_density {output}"
 
 
 rule calculate_merged_initiation:
@@ -83,7 +83,7 @@ rule calculate_merged_initiation:
     output:
         os.path.join(DATADIR, "initiation/k562_initiation_G156.bed"),
     shell:
-        "python ../../data_processing_scripts/initiation.py {input} --return_gene_body_density {output}"
+        "python ../../data_processing_scripts/pausing_index.py {input} --return_gene_body_density {output}"
 
 
 rule get_sequences:
