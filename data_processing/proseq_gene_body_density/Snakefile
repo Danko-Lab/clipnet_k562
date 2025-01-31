@@ -35,7 +35,10 @@ rule copy_fa:
     output:
         os.path.join(WORKDIR, "initiation/hg38.fa.gz"),
     shell:
-        "rsync --progress {input} {output}"
+        """
+        rsync --progress {input} {output}
+        pyfastx index {output}
+        """
 
 
 rule unpack_active_transcripts:
