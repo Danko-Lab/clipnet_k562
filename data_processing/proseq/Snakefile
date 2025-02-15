@@ -1,0 +1,151 @@
+# snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
+# snakemake --printshellcmds --reason --jobs "$(($(nproc --all) / 2))" --resources load=100
+
+import os
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
+# REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
+REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
+WORKDIR = "/workdir/ayh8/data/k562/"
+fold_assignments = "../data_fold_assignments.csv"
+FOLDS = 10
+samples = ["G1", "G5", "G6"]
+
+output = [
+    os.path.join(DATADIR, f"k562_data_folds/k562_proseq_{fold}.npz")
+    for fold in range(FOLDS)
+]
+
+
+rule proseq_all:  # A master rule that ensures all the other rules run
+    input:
+        output,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get PRO-cap signal regions
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule unpack_windows:
+    input:
+        os.path.join(DATADIR, "coords/k562_procap_nonintragenic_tss_1kb_windows.bed.gz"),
+    output:
+        os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+rule unpack_bigwigs:
+    input:
+        os.path.join(
+            REFDIR, "K562_proseq_{sample}/K562_proseq_{sample}_QC_{strand}.rpm.bw"
+        ),
+    output:
+        os.path.join(WORKDIR, "K562_proseq_{sample}_QC_{strand}.rpm.bw"),
+    shell:
+        "rsync {input} {output}"
+
+
+rule get_proseq_signal:
+    input:
+        windows=os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
+        bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_{strand}.rpm.bw"),
+    output:
+        os.path.join(WORKDIR, "k562_proseq_{sample}_{strand}.txt"),
+    shell:
+        "/home/ayh8/bwtool/bwtool extract bed {input} {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert signal files to csv (easy to read)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule read_signal:
+    input:
+        os.path.join(WORKDIR, "k562_proseq_{sample}_{strand}.txt"),
+    resources:
+        load=1,
+    output:
+        os.path.join(WORKDIR, "k562_proseq_{sample}_{strand}.csv.gz"),
+    shell:
+        """
+        python ../../data_processing_scripts/read_signal.py {input} | \
+            gzip > {output}
+        """
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Split signal files into train, val, and test
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule split_signal:
+    input:
+        os.path.join(WORKDIR, "k562_proseq_{sample}_{strand}.csv.gz"),
+    params:
+        fold_assignments=fold_assignments,
+        fold="{fold}",
+    resources:
+        load=1,
+    output:
+        fold=os.path.join(WORKDIR, "k562_proseq_{sample}_{strand}.{fold}.csv.gz"),
+    run:
+        import pandas as pd
+
+        fold_assignments = pd.read_csv(
+            params.fold_assignments, header=0, index_col=None
+        )
+        chroms = list(
+            fold_assignments[fold_assignments["fold"] == int(params.fold)].chrom
+        )
+        data = pd.read_csv(input[0], header=None, index_col=0)
+        fold = pd.DataFrame(
+            [data.loc[idx] for idx in data.index if idx.split(":")[0] in chroms]
+        )
+        fold.to_csv(output[0], header=False, index=True, compression="gzip")
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Concatenate data between individuals
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule proseq_concat:
+    input:
+        [
+            os.path.join(WORKDIR, "k562_proseq_%s_{strand}.{fold}.csv.gz" % sample)
+            for sample in samples
+        ],
+    resources:
+        load=1,
+    output:
+        os.path.join(WORKDIR, "concat/k562_proseq_{strand}_{fold}.csv.gz"),
+    shell:
+        "zcat {input} | gzip > {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Join pl and mn
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule join_proseq:
+    input:
+        pl=os.path.join(WORKDIR, "concat/k562_proseq_plus_{fold}.csv.gz"),
+        mn=os.path.join(WORKDIR, "concat/k562_proseq_minus_{fold}.csv.gz"),
+    resources:
+        load=1,
+    output:
+        os.path.join(DATADIR, "k562_data_folds/k562_proseq_{fold}.npz"),
+    shell:
+        "python ../../data_processing_scripts/join_signal.py {input} --in_csv {output}"

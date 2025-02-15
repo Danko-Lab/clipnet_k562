@@ -1,0 +1,179 @@
+
+
+ENSEMBLE:
+
+Median Track Pearson: 0.6281
+Mean Track Pearson: 0.5986 +/- 0.2169
+Median Track JS Distance: 0.5296
+Mean Track JS Distance: 0.5386 +/- 0.1046
+Track Directionality Pearson: 0.7777
+TSS Position Pearson: 0.6454
+Quantity Log Pearson: 0.7252
+Quantity Spearman: 0.7339
+
+INDIVIDUAL MODELS (FOLD 0):
+
+Median Track Pearson: 0.5536
+Mean Track Pearson: 0.5395 +/- 0.2302
+Median Track JS Distance: 0.5658
+Mean Track JS Distance: 0.5714 +/- 0.0995
+Track Directionality Pearson: 0.7307
+TSS Position Pearson: 0.6080
+Quantity Log Pearson: 0.7022
+Quantity Spearman: 0.7157
+
+Median Track Pearson: 0.5691
+Mean Track Pearson: 0.5503 +/- 0.2305
+Median Track JS Distance: 0.5592
+Mean Track JS Distance: 0.5676 +/- 0.0996
+Track Directionality Pearson: 0.7369
+TSS Position Pearson: 0.6001
+Quantity Log Pearson: 0.7054
+Quantity Spearman: 0.7167
+
+Median Track Pearson: 0.5477
+Mean Track Pearson: 0.5349 +/- 0.2160
+Median Track JS Distance: 0.5752
+Mean Track JS Distance: 0.5810 +/- 0.0908
+Track Directionality Pearson: 0.7306
+TSS Position Pearson: 0.6197
+Quantity Log Pearson: 0.6977
+Quantity Spearman: 0.7071
+
+Median Track Pearson: 0.5741
+Mean Track Pearson: 0.5523 +/- 0.2238
+Median Track JS Distance: 0.5553
+Mean Track JS Distance: 0.5640 +/- 0.0986
+Track Directionality Pearson: 0.7402
+TSS Position Pearson: 0.6166
+Quantity Log Pearson: 0.7058
+Quantity Spearman: 0.7098
+
+Median Track Pearson: 0.5572
+Mean Track Pearson: 0.5340 +/- 0.2259
+Median Track JS Distance: 0.5749
+Mean Track JS Distance: 0.5832 +/- 0.0946
+Track Directionality Pearson: 0.7416
+TSS Position Pearson: 0.6012
+Quantity Log Pearson: 0.6805
+Quantity Spearman: 0.6946
+
+Median Track Pearson: 0.5367
+Mean Track Pearson: 0.5201 +/- 0.2228
+Median Track JS Distance: 0.5908
+Mean Track JS Distance: 0.5963 +/- 0.0948
+Track Directionality Pearson: 0.7342
+TSS Position Pearson: 0.5941
+Quantity Log Pearson: 0.6782
+Quantity Spearman: 0.7128
+
+Median Track Pearson: 0.5090
+Mean Track Pearson: 0.4998 +/- 0.2216
+Median Track JS Distance: 0.5910
+Mean Track JS Distance: 0.5942 +/- 0.0953
+Track Directionality Pearson: 0.6898
+TSS Position Pearson: 0.5662
+Quantity Log Pearson: 0.6680
+Quantity Spearman: 0.6743
+
+Median Track Pearson: 0.5376
+Mean Track Pearson: 0.5202 +/- 0.2219
+Median Track JS Distance: 0.5922
+Mean Track JS Distance: 0.5967 +/- 0.0910
+Track Directionality Pearson: 0.7461
+TSS Position Pearson: 0.5931
+Quantity Log Pearson: 0.7038
+Quantity Spearman: 0.7123
+
+Median Track Pearson: 0.5636
+Mean Track Pearson: 0.5400 +/- 0.2216
+Median Track JS Distance: 0.5718
+Mean Track JS Distance: 0.5814 +/- 0.0922
+Track Directionality Pearson: 0.7340
+TSS Position Pearson: 0.6074
+Quantity Log Pearson: 0.7031
+Quantity Spearman: 0.7256
+
+
+INDIVIDUAL MODELS (FOLD-SPECIFIC METRICS):
+
+Median Track Pearson: 0.5538
+Mean Track Pearson: 0.5391 +/- 0.2320
+Median Track JS Distance: 0.5716
+Mean Track JS Distance: 0.5749 +/- 0.0988
+Track Directionality Pearson: 0.7173
+TSS Position Pearson: 0.5953
+Quantity Log Pearson: 0.7427
+Quantity Spearman: 0.7479
+
+Median Track Pearson: 0.5723
+Mean Track Pearson: 0.5500 +/- 0.2336
+Median Track JS Distance: 0.5611
+Mean Track JS Distance: 0.5688 +/- 0.1006
+Track Directionality Pearson: 0.7176
+TSS Position Pearson: 0.5918
+Quantity Log Pearson: 0.7087
+Quantity Spearman: 0.7187
+
+Median Track Pearson: 0.5473
+Mean Track Pearson: 0.5361 +/- 0.2087
+Median Track JS Distance: 0.5766
+Mean Track JS Distance: 0.5810 +/- 0.0868
+Track Directionality Pearson: 0.7390
+TSS Position Pearson: 0.5810
+Quantity Log Pearson: 0.6882
+Quantity Spearman: 0.6999
+
+Median Track Pearson: 0.5541
+Mean Track Pearson: 0.5345 +/- 0.2356
+Median Track JS Distance: 0.5642
+Mean Track JS Distance: 0.5702 +/- 0.1027
+Track Directionality Pearson: 0.7104
+TSS Position Pearson: 0.6034
+Quantity Log Pearson: 0.6736
+Quantity Spearman: 0.6775
+
+Median Track Pearson: 0.5470
+Mean Track Pearson: 0.5299 +/- 0.2266
+Median Track JS Distance: 0.5789
+Mean Track JS Distance: 0.5848 +/- 0.0936
+Track Directionality Pearson: 0.7155
+TSS Position Pearson: 0.5986
+Quantity Log Pearson: 0.6515
+Quantity Spearman: 0.6626
+
+Median Track Pearson: 0.5243
+Mean Track Pearson: 0.5037 +/- 0.2367
+Median Track JS Distance: 0.6022
+Mean Track JS Distance: 0.6057 +/- 0.1003
+Track Directionality Pearson: 0.6775
+TSS Position Pearson: 0.5603
+Quantity Log Pearson: 0.6734
+Quantity Spearman: 0.6948
+
+Median Track Pearson: 0.5182
+Mean Track Pearson: 0.5076 +/- 0.2212
+Median Track JS Distance: 0.5900
+Mean Track JS Distance: 0.5938 +/- 0.0931
+Track Directionality Pearson: 0.6895
+TSS Position Pearson: 0.5655
+Quantity Log Pearson: 0.7116
+Quantity Spearman: 0.7208
+
+Median Track Pearson: 0.5346
+Mean Track Pearson: 0.5233 +/- 0.2215
+Median Track JS Distance: 0.5947
+Mean Track JS Distance: 0.5968 +/- 0.0913
+Track Directionality Pearson: 0.7354
+TSS Position Pearson: 0.5936
+Quantity Log Pearson: 0.6625
+Quantity Spearman: 0.6652
+
+Median Track Pearson: 0.5805
+Mean Track Pearson: 0.5467 +/- 0.2263
+Median Track JS Distance: 0.5709
+Mean Track JS Distance: 0.5807 +/- 0.0920
+Track Directionality Pearson: 0.7225
+TSS Position Pearson: 0.5784
+Quantity Log Pearson: 0.6985
+Quantity Spearman: 0.7163

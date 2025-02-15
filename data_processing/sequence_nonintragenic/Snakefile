@@ -1,0 +1,138 @@
+# snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
+# snakemake --printshellcmds --reason --jobs "$(($(nproc --all) / 2))" --resources load=100
+
+import os
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
+REFDIR = "/fs/cbsubscb17/storage/data/short_read_index/hg38/"
+WORKDIR = "/workdir/ayh8/data/k562/"
+fold_assignments = "../data_fold_assignments.csv"
+FOLDS = 10
+samples = ["G1", "G5", "G6"]
+
+output = [
+    os.path.join(DATADIR, f"k562_data_folds/k562_sequence_nonintragenic_{fold}.npz")
+    for fold in range(FOLDS)
+]
+output_fa = [
+    os.path.join(DATADIR, f"k562_data_folds/k562_sequence_nonintragenic_{fold}.fa.gz")
+    for fold in range(FOLDS)
+]
+
+
+rule sequence_all:  # A master rule that ensures all the other rules run
+    input:
+        output,
+        output_fa,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get DNA sequence of windows
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule unpack_windows:
+    input:
+        os.path.join(DATADIR, "coords/k562_procap_nonintragenic_tss_1kb_windows.bed.gz"),
+    resources:
+        load=1,
+    output:
+        os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+rule unpack_fa:
+    input:
+        os.path.join(REFDIR, "hg38.rRNA.fa.gz"),
+    resources:
+        load=1,
+    output:
+        os.path.join(WORKDIR, "hg38.rRNA.fa"),
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+rule get_window_sequences:
+    input:
+        fa=os.path.join(WORKDIR, "hg38.rRNA.fa"),
+        bed=os.path.join(WORKDIR, "k562_procap_nonintragenic_tss_1kb_windows.bed"),
+    resources:
+        load=1,
+    output:
+        os.path.join(WORKDIR, "k562_sequence.fa"),
+    shell:
+        "bedtools getfasta -fi {input.fa} -bed {input.bed} -fo {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Split sequence files into data folds
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule split_sequence:
+    input:
+        fa=os.path.join(WORKDIR, "k562_sequence.fa"),
+    resources:
+        load=1,
+    params:
+        fold_assignments=fold_assignments,
+        fold="{fold}",
+    output:
+        fa=os.path.join(
+            DATADIR, "k562_data_folds/k562_sequence_nonintragenic_{fold}.fa.gz"
+        ),
+    run:
+        from Bio import SeqIO, bgzf
+        import pandas as pd
+
+        fold_assignments = pd.read_csv(
+            params.fold_assignments, header=0, index_col=None
+        )
+        chroms = list(
+            fold_assignments[fold_assignments["fold"] == int(params.fold)].chrom
+        )
+
+        recs = []
+        with open(input.fa, "rt") as f:
+            for rec in SeqIO.parse(f, "fasta"):
+                chrom = rec.id.split(":")[0].split("_")[-1]
+                if chrom in chroms:
+                    recs.append(rec)
+
+        with bgzf.BgzfWriter(output.fa, "wb") as out:
+            SeqIO.write(recs, out, "fasta")
+
+
+rule numpify_fasta:
+    input:
+        fa=os.path.join(
+            DATADIR, "k562_data_folds/k562_sequence_nonintragenic_{fold}.fa.gz"
+        ),
+    params:
+        samples=range(len(samples)),
+    output:
+        npz=os.path.join(
+            DATADIR, "k562_data_folds/k562_sequence_nonintragenic_{fold}.npz"
+        ),
+    run:
+        import numpy as np
+        import sys
+        import pyfastx
+
+        sys.path.append("../../clipnet_transfer_learning/")
+        import utils
+
+        seq_array = utils.get_twohot_fasta_sequences(input.fa, cores=1)
+
+        # Duplicate the sequence array for each sample
+        concat = np.concatenate([seq_array for _ in params.samples], axis=0)
+        np.savez_compressed(output.npz, concat)

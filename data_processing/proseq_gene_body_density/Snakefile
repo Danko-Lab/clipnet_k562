@@ -1,0 +1,160 @@
+# snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
+# snakemake --printshellcmds --reason --jobs "$(($(nproc --all) / 2))" --resources load=100
+
+import os
+import pandas as pd
+import pyfastx
+import tqdm
+import numpy as np
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
+# REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
+REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
+WORKDIR = "/workdir/ayh8/data/k562/"
+samples = ["G1", "G5", "G6", "G156"]
+
+output = expand(
+    os.path.join(DATADIR, "initiation/k562_initiation_{sample}.bed"),
+    sample=samples,
+) + [
+    os.path.join(DATADIR, "initiation/k562_initiation_jitter.fa.gz"),
+    os.path.join(DATADIR, "initiation/k562_initiation_centered.fa.gz"),
+]
+
+
+rule all:  # A master rule that ensures all the other rules run
+    input:
+        output,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+rule copy_fa:
+    input:
+        "/fs/cbsubscb17/storage/data/hg38/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz",
+    output:
+        os.path.join(WORKDIR, "initiation/hg38.fa.gz"),
+    shell:
+        """
+        rsync --progress {input} {output}
+        pyfastx index {output}
+        """
+
+
+rule unpack_active_transcripts:
+    input:
+        os.path.join(REFDIR, "denr_transcript_abundance_rpb_1.bed.gz"),
+    output:
+        os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+rule unpack_bigwigs:
+    input:
+        os.path.join(REFDIR, "K562_proseq_{sample}/K562_proseq_{sample}_QC_{strand}.bw"),
+    output:
+        os.path.join(WORKDIR, "K562_proseq_{sample}_QC_{strand}.bw"),
+    shell:
+        "rsync {input} {output}"
+
+
+rule unpack_merged_bigwigs:
+    input:
+        os.path.join(REFDIR, "K562_proseq_G156_QC_{strand}.bw"),
+    output:
+        os.path.join(WORKDIR, "K562_proseq_G156_QC_{strand}.bw"),
+    shell:
+        "rsync {input} {output}"
+
+
+rule calculate_initiation:
+    input:
+        pl_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_plus.bw"),
+        mn_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_minus.bw"),
+        bed=os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
+    output:
+        os.path.join(DATADIR, "initiation/k562_initiation_{sample}.bed"),
+    shell:
+        "python ../../data_processing_scripts/pausing_index.py {input} --return_gene_body_density {output}"
+
+
+rule calculate_merged_initiation:
+    input:
+        pl_bw=os.path.join(WORKDIR, "K562_proseq_G156_QC_plus.bw"),
+        mn_bw=os.path.join(WORKDIR, "K562_proseq_G156_QC_minus.bw"),
+        bed=os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
+    output:
+        os.path.join(DATADIR, "initiation/k562_initiation_G156.bed"),
+    shell:
+        "python ../../data_processing_scripts/pausing_index.py {input} --return_gene_body_density {output}"
+
+
+rule get_sequences:
+    input:
+        bed=os.path.join(DATADIR, "initiation/k562_initiation_G1.bed"),
+        fa=os.path.join(WORKDIR, "initiation/hg38.fa.gz"),
+    output:
+        fa=os.path.join(DATADIR, "initiation/k562_initiation_jitter.fa"),
+    run:
+        ref_genome = pyfastx.Fasta(input.fa)
+        names = ("chrom", "start", "stop", "name", "y", "strand")
+        initiation = pd.read_csv(input.bed, header=None, sep="\t", names=names)
+        subsequences = {}
+        for i, row in tqdm.tqdm(
+            initiation.iterrows(),
+            desc="Fetching sequences",
+            total=initiation.shape[0],
+        ):
+            rand = np.random.randint(0, 100)
+            interval = (row["start"] - 500 + 1 + rand, row["start"] + 500 + rand)
+            k = f'{row["name"]} {row["chrom"]}:{interval[0]}-{interval[1]} {row["strand"]}'
+            subsequences[k] = ref_genome.fetch(
+                row["chrom"], interval, strand=row["strand"]
+            )
+        with open(output.fa, "w") as f:
+            for k, v in tqdm.tqdm(subsequences.items(), desc="Writing sequences"):
+                f.write(f">{k}\n{v}\n")
+
+
+rule get_centered_sequences:
+    input:
+        bed=os.path.join(DATADIR, "initiation/k562_initiation_G1.bed"),
+        fa=os.path.join(WORKDIR, "initiation/hg38.fa.gz"),
+    output:
+        fa=os.path.join(DATADIR, "initiation/k562_initiation_centered.fa"),
+    run:
+        ref_genome = pyfastx.Fasta(input.fa)
+        names = ("chrom", "start", "stop", "name", "y", "strand")
+        initiation = pd.read_csv(input.bed, header=None, sep="\t", names=names)
+        subsequences = {}
+        for i, row in tqdm.tqdm(
+            initiation.iterrows(),
+            desc="Fetching sequences",
+            total=initiation.shape[0],
+        ):
+            interval = (row["start"] - 500 + 1, row["start"] + 500)
+            k = f'{row["name"]} {row["chrom"]}:{interval[0]}-{interval[1]} {row["strand"]}'
+            subsequences[k] = ref_genome.fetch(
+                row["chrom"], interval, strand=row["strand"]
+            )
+        with open(output.fa, "w") as f:
+            for k, v in tqdm.tqdm(subsequences.items(), desc="Writing sequences"):
+                f.write(f">{k}\n{v}\n")
+
+
+rule compress:
+    input:
+        os.path.join(DATADIR, "initiation/k562_initiation_jitter.fa"),
+        os.path.join(DATADIR, "initiation/k562_initiation_centered.fa"),
+    output:
+        os.path.join(DATADIR, "initiation/k562_initiation_jitter.fa.gz"),
+        os.path.join(DATADIR, "initiation/k562_initiation_centered.fa.gz"),
+    shell:
+        "for f in {input}; do bgzip $f; done"

@@ -1,0 +1,111 @@
+# snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
+# snakemake --printshellcmds --reason --jobs "$(($(nproc --all) / 2))" --resources load=100
+
+import os
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/coords/"
+REFDIR = "/fs/cbsubscb17/storage/data/hg38/"
+WORKDIR = "/workdir/ayh8/data/k562/"
+
+peaks = os.path.join(DATADIR, "k562_procap_pairedPeak_autosomes.bed.gz")
+
+nonintragenic_peaks = os.path.join(
+    DATADIR, "k562_procap_nonintragenic_pairedPeak_autosomes.bed.gz"
+)
+nonintragenic_windows = os.path.join(
+    DATADIR, "k562_procap_nonintragenic_tss_1kb_windows.bed.gz"
+)
+
+
+rule all:  # A master rule that ensures all the other rules run
+    input:
+        nonintragenic_peaks,
+        nonintragenic_windows,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -rf {params}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Merge bigwig files
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule get_nonpromoters:
+    input:
+        peaks=peaks,
+        promoters=os.path.join(REFDIR, "ENCODE/GRCh38-PLS.bed.gz"),
+    output:
+        prom=os.path.join(WORKDIR, "k562_procap_prom.bed"),
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
+    shell:
+        """
+        bedtools intersect -a {input.peaks} -b {input.promoters} -wa | cut -f1-3 > {output.prom}
+        bedtools intersect -a {input.peaks} -b {input.promoters} -v | cut -f1-3 > {output.nonprom}
+        """
+
+
+# Not currenly used b/c data is all in hg38. This is for the K562 data that was mapped to hg19
+rule crossmap_hg38_to_hg19:
+    input:
+        liftover=os.path.join(REFDIR, "hg38ToHg19.over.chain.gz"),
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
+        prom=os.path.join(WORKDIR, "k562_procap_prom.bed"),
+    output:
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom_hg19.bed"),
+        prom=os.path.join(WORKDIR, "k562_procap_prom_hg19.bed"),
+    shell:
+        """
+        CrossMap.py bed {input.liftover} {input.nonprom} {output.nonprom}
+        CrossMap.py bed {input.liftover} {input.prom} {output.prom}
+        """
+
+
+rule exclude_intragenic_peaks:
+    input:
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonprom.bed"),
+        genes=os.path.join(
+            REFDIR, "k562/proseq_dreg_datasets/denr_greater_than_1rpb_tx.bed.gz"
+        ),
+    output:
+        os.path.join(WORKDIR, "k562_procap_nonintragenic.bed"),
+    shell:
+        "bedtools intersect -a {input.nonprom} -b {input.genes} -v > {output}"
+
+
+rule merge_prom_nonprom:
+    input:
+        prom=os.path.join(WORKDIR, "k562_procap_prom.bed"),
+        nonprom=os.path.join(WORKDIR, "k562_procap_nonintragenic.bed"),
+    output:
+        nonintragenic_peaks,
+    shell:
+        "sort-bed {input} | bedops -m - | bgzip > {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get window coordinates
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule get_window:
+    input:
+        nonintragenic_peaks,
+    params:
+        buffer=250,
+        seed=47,
+    resources:
+        load=1,
+    output:
+        nonintragenic_windows,
+    shell:
+        """
+        python ../../data_processing_scripts/sample_windows.py \
+            {input} --buffer {params.buffer} --seed {params.seed} | \
+            sort | uniq | gzip > {output}
+        """

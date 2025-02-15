@@ -1,0 +1,105 @@
+# snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
+# snakemake --printshellcmds --reason --jobs "$(($(nproc --all) / 2))" --resources load=100
+
+import os
+
+import pandas as pd
+import pyfastx
+import tqdm
+import numpy as np
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/k562/"
+# REFDIR = "/local/workdir/James/PauseEvolution/data/human_K562/"
+REFDIR = "/fs/cbsubscb17/storage/data/hg38/k562/proseq_dreg_datasets/"
+WORKDIR = "/workdir/ayh8/data/k562/"
+
+output = [
+    os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa.gz"),
+    os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa.gz"),
+]
+
+
+rule proseq_all:  # A master rule that ensures all the other rules run
+    input:
+        output,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+rule copy_fa:
+    input:
+        "/fs/cbsubscb17/storage/data/hg38/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz",
+    output:
+        os.path.join(WORKDIR, "pausing_index/hg38.fa.gz"),
+    shell:
+        "rsync --progress {input} {output}"
+
+
+rule get_sequences:
+    input:
+        bed=os.path.join(DATADIR, "pausing_index/k562_pausing_index_G1.bed"),
+        fa=os.path.join(WORKDIR, "pausing_index/hg38.fa.gz"),
+    output:
+        fa=os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa"),
+    run:
+        ref_genome = pyfastx.Fasta(input.fa)
+        names = ("chrom", "start", "stop", "name", "y", "strand")
+        pausing_index = pd.read_csv(input.bed, header=None, sep="\t", names=names)
+        subsequences = {}
+        for i, row in tqdm.tqdm(
+            pausing_index.iterrows(),
+            desc="Fetching sequences",
+            total=pausing_index.shape[0],
+        ):
+            rand = np.random.randint(0, 100)
+            interval = (row["start"] - 500 + 1 + rand, row["start"] + 500 + rand)
+            k = f'{row["name"]} {row["chrom"]}:{interval[0]}-{interval[1]} {row["strand"]}'
+            subsequences[k] = ref_genome.fetch(
+                row["chrom"], interval, strand=row["strand"]
+            )
+        with open(output.fa, "w") as f:
+            for k, v in tqdm.tqdm(subsequences.items(), desc="Writing sequences"):
+                f.write(f">{k}\n{v}\n")
+
+
+rule get_centered_sequences:
+    input:
+        bed=os.path.join(DATADIR, "pausing_index/k562_pausing_index_G1.bed"),
+        fa=os.path.join(WORKDIR, "pausing_index/hg38.fa.gz"),
+    output:
+        fa=os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa"),
+    run:
+        ref_genome = pyfastx.Fasta(input.fa)
+        names = ("chrom", "start", "stop", "name", "y", "strand")
+        pausing_index = pd.read_csv(input.bed, header=None, sep="\t", names=names)
+        subsequences = {}
+        for i, row in tqdm.tqdm(
+            pausing_index.iterrows(),
+            desc="Fetching sequences",
+            total=pausing_index.shape[0],
+        ):
+            interval = (row["start"] - 500 + 1, row["start"] + 500)
+            k = f'{row["name"]} {row["chrom"]}:{interval[0]}-{interval[1]} {row["strand"]}'
+            subsequences[k] = ref_genome.fetch(
+                row["chrom"], interval, strand=row["strand"]
+            )
+        with open(output.fa, "w") as f:
+            for k, v in tqdm.tqdm(subsequences.items(), desc="Writing sequences"):
+                f.write(f">{k}\n{v}\n")
+
+
+rule compress:
+    input:
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa"),
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa"),
+    output:
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index.fa.gz"),
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_centered.fa.gz"),
+    shell:
+        "for f in {input}; do bgzip $f; done"
