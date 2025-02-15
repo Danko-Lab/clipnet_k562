@@ -6,7 +6,7 @@ This repo contains code to analyse a couple different transcription initiation m
 
 The python package requirements for CLIPNET K562 are just those of the original CLIPNET package. The CLIPNET package and its dependencies can be installed from source (https://github.com/Danko-Lab/clipnet).
 
-ProCapNet (https://github.com/kundajelab/ProCapNet) and Enformer (https://github.com/lucidrains/enformer-pytorch) require Pytorch. The dependencies are listed in `requirements_pth.txt`. These should be installed in a separate environment from the TF environment used for CLIPNET. You will also need to install PersonalBPNet (https://github.com/adamyhe/PersonalBPNet), as it contains a number of utility functions and a copy of the ProCapNet class.
+ProCapNet (https://github.com/kundajelab/ProCapNet) and Enformer (https://github.com/lucidrains/enformer-pytorch) require Pytorch. The dependencies are listed in `requirements_pytorch.txt`. These should be installed in a separate environment from the TF environment used for CLIPNET. You will also need to install PersonalBPNet (https://github.com/adamyhe/PersonalBPNet), as it contains a number of utility functions and a copy of the ProCapNet class.
 
 ## Training data processing
 
