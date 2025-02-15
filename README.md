@@ -4,17 +4,17 @@ This repo contains code to analyse a couple different transcription initiation m
 
 ## Code dependencies
 
-The python package requirements for CLIPNET K562 are listed in `requirements_tf.txt` and are identical to those used for the original CLIPNET project (https://github.com/Danko-Lab/clipnet/blob/main/requirements.txt).
+The python package requirements for CLIPNET K562 are just those of the original CLIPNET package. The CLIPNET package and its dependencies can be installed from source (https://github.com/Danko-Lab/clipnet).
 
-ProCapNet (https://github.com/kundajelab/ProCapNet) and Enformer (https://github.com/lucidrains/enformer-pytorch) require Pytorch. The dependencies are listed in `requirements_pth.txt`. These should be installed in a separate environment from the TF environment used for CLIPNET. You will also need to install [PersonalBPNet](https://github.com/adamyhe/PersonalBPNet/), as it contains a number of utility functions and a copy of the ProCapNet class.
+ProCapNet (https://github.com/kundajelab/ProCapNet) and Enformer (https://github.com/lucidrains/enformer-pytorch) require Pytorch. The dependencies are listed in `requirements_pth.txt`. These should be installed in a separate environment from the TF environment used for CLIPNET. You will also need to install PersonalBPNet (https://github.com/adamyhe/PersonalBPNet), as it contains a number of utility functions and a copy of the ProCapNet class.
 
 ## Training data processing
 
-Scripts to download/process K562 PRO-cap data for fine tuning are in `data_processing`. We note that that directory contains a number of pipelines for processing K562 data (including for PRO-seq models that have not yet been published). For more details on the minimal necessary scripts to reproduce the K562 initiation models, please consult the README in that directory.
+Scripts to download/process K562 PRO-cap data for fine tuning are in `data_processing/`. We note that that directory contains a number of pipelines for processing K562 data (including for PRO-seq models that have not yet been published). For more details on the minimal necessary scripts to reproduce the K562 initiation models, please consult the README in that directory.
 
 ## Fine tuning scripts
 
-Scripts to fine tune CLIPNET models to K562 are located in `clipnet_ft`. These scripts will presume that the training data have been downloaded from Zenodo or preprocessed per protocols in `data_processing/`
+Scripts to fine tune CLIPNET models to K562 are located in `clipnet_ft/`. These scripts will presume that the training data have been downloaded from Zenodo or preprocessed per protocols in `data_processing/`
 
 ## Download pretrained models
 
@@ -42,6 +42,6 @@ rm ENCFF976FHE.tar.gz
 
 ## Benchmarking
 
-Scripts to benchmark models on PRO-cap prediction at genomic loci are in `genomic_benchmarks`.
+Scripts to benchmark models on PRO-cap prediction at genomic loci are in `genomic_benchmarks/`.
 
-Scripts to benchmark models on MPRA variant effect prediction are in `mpra_benchmarks`.
+Scripts to benchmark models on MPRA variant effect prediction are in `mpra_benchmarks/`.
