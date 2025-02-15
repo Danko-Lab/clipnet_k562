@@ -25,36 +25,15 @@ We'll use the `predict_ensemble.py` script provided in the [original CLIPNET rep
 ```bash
 conda activate clipnet
 
-cd /home2/ayh8/clipnet/ # Or wherever your CLIPNET path is.
-# Switch paths to point to where your data and models are located.
-
 # Example scripts for predicting with the model ensemble:
-python predict_ensemble.py \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.npz \
-    --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
-    --gpu 0
-python predict_ensemble.py \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.npz \
-    --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562/ \
-    --gpu 0
-
-# To predict with the individual models:
-for i in {1..9}; do
-    python predict_individual_model.py \
-        /home2/ayh8/clipnet_k562/models/clipnet_k562/fold_${i}.h5 \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_fold_${i}.h5 \
-        --gpu 0;
-done
-for i in {1..9}; do
-    python predict_individual_model.py \
-        /home2/ayh8/clipnet_k562/models/clipnet_k562/fold_${i}.h5 \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt_fold_${i}.h5 \
-        --gpu 0;
-done
+clipnet predict \
+    -f /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
+    -o /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.npz \
+    -m /home2/ayh8/clipnet_k562/models/clipnet_k562/ -v
+clipnet predict \
+    -f /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
+    -o /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.npz \
+    -m /home2/ayh8/clipnet_k562/models/clipnet_k562/ -v
 ```
 
 ## Predict using reference-trained CLIPNET
@@ -62,31 +41,15 @@ done
 These models can be predicted with in the exact same fashion as above:
 
 ```bash
-python predict_ensemble.py \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_ref_model.h5 \
-    --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562_reference/ \
-    --gpu 0
-python predict_ensemble.py \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
-    /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt_ref_model.h5 \
-    --model_dir /home2/ayh8/clipnet_k562/models/clipnet_k562_reference/ \
-    --gpu 0
-
-for i in {1..9}; do
-    python predict_individual_model.py \
-        /home2/ayh8/clipnet_k562/models/clipnet_k562_reference/fold_${i}.h5 \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref_fold_${i}_ref_model.h5 \
-        --gpu 0;
-done
-for i in {1..9}; do
-    python predict_individual_model.py \
-        /home2/ayh8/clipnet_k562/models/clipnet_k562_reference/fold_${i}.h5 \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
-        /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt_fold_${i}_ref_model.h5 \
-        --gpu 0;
-done
+# Example scripts for predicting with the model ensemble:
+clipnet predict \
+    -f /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.fa.gz \
+    -o /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_ref.npz \
+    -m /home2/ayh8/clipnet_k562/models/clipnet_k562_reference/ -v
+clipnet predict \
+    -f /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.fa.gz \
+    -o /home2/ayh8/clipnet_k562/data/mpra/k562_mpra_snps_alt.npz \
+    -m /home2/ayh8/clipnet_k562/models/clipnet_k562_reference/ -v
 ```
 
 ## Predict using ProCapNet
@@ -129,4 +92,6 @@ python predict_enformer_ref.py
 ```python
 import h5py
 import numpy as np
+
+# TODO
 ```
