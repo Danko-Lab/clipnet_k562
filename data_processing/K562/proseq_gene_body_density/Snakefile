@@ -1,5 +1,5 @@
 # snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
-# snakemake --printshellcmds --reason --jobs "$(($(nproc --all) / 2))" --resources load=100
+# snakemake --printshellcmds --reason --jobs 32 --resources load=100
 
 import os
 import pandas as pd
@@ -37,7 +37,7 @@ rule all:  # A master rule that ensures all the other rules run
 
 rule copy_fa:
     input:
-        "/fs/cbsubscb17/storage/data/hg38/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz",
+        "/fs/cbsubscb17/storage/data/hg38/ENCODE_reference/hg38.rRNA.fa.gz",
     output:
         os.path.join(WORKDIR, "initiation/hg38.fa.gz"),
     shell:

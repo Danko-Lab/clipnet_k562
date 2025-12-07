@@ -1,0 +1,71 @@
+# snakemake --dryrun --printshellcmds --reason --jobs 1 --resources load=100
+# snakemake --printshellcmds --reason --jobs 16 --resources load=100
+
+import os
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Replace with where you want to save output files
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/CTCF_U/"
+# Replace with scratch space directory
+WORKDIR = "/workdir/ayh8/clipnet_finetuning"
+
+
+windows = os.path.join(DATADIR, "HCT116_procap_tss_1kb_windows.bed.gz")
+centered_windows = os.path.join(
+    DATADIR, "HCT116_procap_tss_1kb_centered_windows.bed.gz"
+)
+
+
+rule all:  # A master rule that ensures all the other rules run
+    input:
+        windows,
+        centered_windows,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -rf {params}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get window coordinates
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule get_window:
+    input:
+        os.path.join(DATADIR, "brm_CTCF_U1_and_CTCF_U2_erm_1_bidirectional_peaks.bed"),
+    params:
+        buffer=250,
+        seed=47,
+    resources:
+        load=1,
+    output:
+        windows,
+    shell:
+        """
+        python ../../data_processing_scripts/sample_windows.py \
+            {input} --buffer {params.buffer} --seed {params.seed} | \
+            sort-bed - | uniq | bgzip > {output}
+        """
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get window coordinates
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule centered_windows:
+    input:
+        os.path.join(DATADIR, "brm_CTCF_U1_and_CTCF_U2_erm_1_bidirectional_peaks.bed"),
+    params:
+        buffer=0,
+    output:
+        centered_windows,
+    shell:
+        """
+        python ../../data_processing_scripts/sample_windows.py \
+            {input} --buffer {params.buffer} | sort-bed - | uniq | bgzip > {output}
+        """

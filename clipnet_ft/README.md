@@ -2,7 +2,7 @@
 
 This directory contains scripts for fine tuning the CLIPNET model (trained in LCLs) to K562 data.
 
-Unless you want to replicate the results of the study, you should not need to run these scripts. The pre-trained model weights are available on Zenodo at https://zenodo.org/records/11196189.
+Unless you want to replicate the results of the study, you should not need to run these scripts. The pre-trained model weights are available on Zenodo at https://zenodo.org/records/11196189. These models are compliant with the scripts/API described in the original CLIPNET TensorFlow [repo](https://github.com/Danko-Lab/clipnet/) and the PyTorch [port](https://github.com/adamyhe/PersonalBPNet/).
 
 ## Fine tuning
 
@@ -28,6 +28,7 @@ done
 # DATADIR = where processed K562 data is stored.
 mkdir -p ../models/clipnet_k562/
 python calculate_fold_params.py $DATADIR ../models/clipnet_k562/
+
 GPU=0
 for i in {1..9}; do python ft_k562.py $i $GPU; done
 ```
@@ -66,6 +67,6 @@ For the K562 models fine tuned from the reference-trained CLIPNET LCL models (re
 ```bash
 mkdir -p ../models/clipnet_k562_reference/
 wget https://zenodo.org/records/14037356/files/clipnet_k562_reference.tar
-tar -xvf clipnet_k562_reference.tar -C ../models/clipnet_k562_test --strip-components=1
+tar -xvf clipnet_k562_reference.tar -C ../models/clipnet_k562_reference --strip-components=1
 rm clipnet_k562_reference.tar
 ```

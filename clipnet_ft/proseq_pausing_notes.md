@@ -16,6 +16,37 @@ And then the PRO-seq models to predict pausing index at promoters (also not docu
 for i in {1..9}; do python ft_k562_pausing.py $i; done
 ```
 
+Predict
+
+```bash
+clipnet predict
+    -f ../../data/k562/initiation/k562__centered.fa.gz \
+    -o ../../predictions/k562/k562_initiation_centered.npz \
+    -m ../clipnet_k562/models/clipnet_k562_pausing/ \
+    -n 1 -v
+```
+
+Benchmark pausing predictions:
+
+```python
+import pandas as pd
+import numpy as np
+from scipy.stats import pearsonr, spearmanr
+
+expt = pd.read_csv("k562_pausing_index_G156.bed", sep="\t", header=None)
+pred = np.load("k562_pausing_index_centered.npz")["arr_0"]
+
+data = pd.DataFrame(
+    {"chrom": expt.iloc[:, 0], "expt": expt.iloc[:, 4], "pred": pred.squeeze()}
+)
+test = data[data.chrom.isin([f"chr{c}" for c in [9, 13, 20, 21]])]
+pearsonr(np.log1p(test.expt), np.log1p(test.pred))
+# PearsonRResult(statistic=0.7042098971122046, pvalue=0.0)
+spearmanr(test.expt, test.pred)
+# SignificanceResult(statistic=0.7096471096228426, pvalue=0.0)
+data.to_csv("../../predictions/k562/k562_initiation_G156_benchmark.csv.gz")
+```
+
 For the gene body density models:
 
 ```bash

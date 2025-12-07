@@ -116,13 +116,13 @@ def pausing_index_from_bed(
     mn_bed = clean_bed[clean_bed["strand"] == "-"]
     if return_gene_body_density:
         pl_bed["y"] = pl_bed.apply(
-            lambda x: pausing_index(
+            lambda x: gene_body_density(
                 pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]
             ),
             axis=1,
         )
         mn_bed["y"] = mn_bed.apply(
-            lambda x: pausing_index(
+            lambda x: gene_body_density(
                 mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]
             ),
             axis=1,
@@ -133,13 +133,13 @@ def pausing_index_from_bed(
         mn_bed["y"] = mn_bed["y"] * permillion
     else:
         pl_bed["y"] = pl_bed.apply(
-            lambda x: gene_body_density(
+            lambda x: pausing_index(
                 pl_bw, x["chrom"], x["start"], x["stop"], x["strand"]
             ),
             axis=1,
         )
         mn_bed["y"] = mn_bed.apply(
-            lambda x: gene_body_density(
+            lambda x: pausing_index(
                 mn_bw, x["chrom"], x["start"], x["stop"], x["strand"]
             ),
             axis=1,

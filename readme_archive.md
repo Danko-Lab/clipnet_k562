@@ -25,45 +25,44 @@ python calculate_performance_metrics.py \
 
 ```bash
 conda activate clipnet
-cd /home2/ayh8/clipnet/
+cd /home2/ayh8/clipnet_k562/
 
-mode=profile
-python calculate_deepshap.py \
-    ../data/k562_data_folds/k562_data_folds/k562_centered.fna.gz \
-    ../clipnet_k562/attributions/k562_deepshap_${mode}.npz \
-    ../clipnet_k562/attributions/k562_seqs_onehot.npz \
-    --model_dir ../clipnet_k562/models/clipnet_k562 \
-    --gpu 0 --mode $mode
+attr=profile
+clipnet attribute \
+    -f ../data/k562/k562_centered.fa.gz \
+    -o ../attr/k562/k562_procap_deepshap_${attr}.npz \
+    -m models/clipnet_k562 \
+    -a $attr -c -v
 ```
 
 ## Calculate CLIPNET_K562 PRO-seq attributions
 
 ```bash
 conda activate clipnet
-cd /home2/ayh8/clipnet/
+cd /home2/ayh8/clipnet_k562/
 
-mode=profile
-python calculate_deepshap.py \
-    ../data/k562_data_folds/k562_data_folds/k562_centered.fna.gz \
-    ../clipnet_k562/attributions/k562_deepshap_${mode}.npz \
-    ../clipnet_k562/attributions/k562_seqs_onehot.npz \
-    --model_dir ../clipnet_k562/models/clipnet_k562 \
-    --gpu 0 --mode $mode
+attr=profile
+clipnet attribute \
+    -f ../data/k562/k562_centered.fa.gz \
+    -o ../attr/k562/k562_proseq_deepshap_${attr}.npz \
+    -m models/clipnet_k562_proseq \
+    -a $attr -c -v
 ```
 
 ## Calculate CLIPNET_K562 TF-MoDISco
 
 ```bash
-conda activate modisco
-mode=profile
+conda activate bpnet
+cd /home2/ayh8/attr/k562/
 
+attr=profile
 time modisco motifs \
     -s attributions/k562_seqs_onehot.npz \
-    -a attributions/k562_deepshap_${mode}.npz \
-    -o attributions/k562_deepshap_${mode}_modisco.h5 \
+    -a attributions/k562_proseq_deepshap_${attr}.npz \
+    -o attributions/k562_proseq_deepshap_${attr}_modisco.h5 \
     -n 1000000 -l 50 -v 
 time modisco report \
-    -i attributions/k562_deepshap_${mode}_modisco.h5 \
-    -o attributions/k562_deepshap_${mode}_modisco/ \
-    -m /home2/ayh8/data/JASPAR/JASPAR2022_CORE_vertebrates_non-redundant_pfms_meme.txt
+    -i attributions/k562_proseq_deepshap_${attr}_modisco.h5 \
+    -o attributions/k562_proseq_deepshap_${attr}_modisco/ \
+    -m ../data/JASPAR/JASPAR2024_CORE_vertebrates_non-redundant_pfms_meme.txt
 ```

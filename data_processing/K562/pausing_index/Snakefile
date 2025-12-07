@@ -14,7 +14,7 @@ WORKDIR = "/workdir/ayh8/data/k562/"
 samples = ["G1", "G5", "G6", "G156"]
 
 output = expand(
-    os.path.join(DATADIR, "initiation/k562_initiation_{sample}.bed"),
+    os.path.join(DATADIR, "pausing_index/k562_pausing_index_{sample}.bed"),
     sample=samples,
 )
 
@@ -55,23 +55,23 @@ rule unpack_merged_bigwigs:
         "rsync {input} {output}"
 
 
-rule calculate_initiation:
+rule calculate_pausing_index:
     input:
         pl_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_plus.bw"),
         mn_bw=os.path.join(WORKDIR, "K562_proseq_{sample}_QC_minus.bw"),
         bed=os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
     output:
-        os.path.join(DATADIR, "initiation/k562_initiation_{sample}.bed"),
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_{sample}.bed"),
     shell:
-        "python ../../data_processing_scripts/pausing_index.py {input} --{output}"
+        "python ../../data_processing_scripts/pausing_index.py {input} {output}"
 
 
-rule calculate_merged_initiation:
+rule calculate_merged_pausing_index:
     input:
         pl_bw=os.path.join(WORKDIR, "K562_proseq_G156_QC_plus.bw"),
         mn_bw=os.path.join(WORKDIR, "K562_proseq_G156_QC_minus.bw"),
         bed=os.path.join(WORKDIR, "denr_transcript_abundance_rpb_1.bed"),
     output:
-        os.path.join(DATADIR, "initiation/k562_initiation_G156.bed"),
+        os.path.join(DATADIR, "pausing_index/k562_pausing_index_G156.bed"),
     shell:
         "python ../../data_processing_scripts/pausing_index.py {input} {output}"

@@ -1,4 +1,4 @@
-# python transfer_learn_k562_reference.py $fold $gpu
+# python ft_k562_reference.py $fold $gpu
 
 import json
 import logging
@@ -10,13 +10,9 @@ from pathlib import Path
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "4"
 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 import tensorflow as tf
+from clipnet import cgen, clipnet, rnn_v10
 from tensorflow.keras.callbacks import CSVLogger, LearningRateScheduler
 from tqdm.keras import TqdmCallback
-
-sys.path.append("../../clipnet/")
-import cgen
-import clipnet
-import rnn_v10
 
 fold = int(sys.argv[1])
 gpu = int(sys.argv[2])

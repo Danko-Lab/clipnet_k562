@@ -35,3 +35,13 @@ for i in {1..9}; do
         ../predictions/k562/individual_test/k562_performance_${i}.h5
 done
 ```
+
+```bash
+clipnet_tf predict -v \
+    -f ../../data/hg38.fa \
+    -b ../../data/k562/k562_procap_pints_autosomes.bed.gz \
+    -o ../../data/k562/clipnet_k562_procap_pints_autosomes.npz \
+    -m ../models/clipnet_k562 \
+    -s ../../data/k562/k562_procap_pl.rpm.bw ../../data/k562/k562_procap_mn.rpm.bw \
+    -c chr9 chr13 chr20 chr21
+```

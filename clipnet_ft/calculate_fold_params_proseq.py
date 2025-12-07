@@ -11,7 +11,7 @@ import os
 import numpy as np
 
 
-def write_dataset_params(i, datadir, outdir):
+def write_dataset_params(i, datadir, outdir, biosample):
     outdir = f"{outdir}/f{i + 1}/"
     os.makedirs(outdir, exist_ok=True)
 
@@ -22,25 +22,28 @@ def write_dataset_params(i, datadir, outdir):
 
     dataset_params = {
         "train_seq": [
-            os.path.join(datadir, f"k562_sequence_nonintragenic_{fold}.npz")
+            os.path.join(datadir, f"{biosample}_sequence_nonintragenic_{fold}.npz")
             for fold in train_folds
         ],
         "train_proseq": [
-            os.path.join(datadir, f"k562_proseq_{fold}.npz") for fold in train_folds
+            os.path.join(datadir, f"{biosample}_proseq_{fold}.npz")
+            for fold in train_folds
         ],
         "val_seq": [
-            os.path.join(datadir, f"k562_sequence_nonintragenic_{fold}.npz")
+            os.path.join(datadir, f"{biosample}_sequence_nonintragenic_{fold}.npz")
             for fold in val_folds
         ],
         "val_proseq": [
-            os.path.join(datadir, f"k562_proseq_{fold}.npz") for fold in val_folds
+            os.path.join(datadir, f"{biosample}_proseq_{fold}.npz")
+            for fold in val_folds
         ],
         "test_seq": [
-            os.path.join(datadir, f"k562_sequence_nonintragenic_{fold}.npz")
+            os.path.join(datadir, f"{biosample}_sequence_nonintragenic_{fold}.npz")
             for fold in test_folds
         ],
         "test_proseq": [
-            os.path.join(datadir, f"k562_proseq_{fold}.npz") for fold in test_folds
+            os.path.join(datadir, f"{biosample}_proseq_{fold}.npz")
+            for fold in test_folds
         ],
     }
 
@@ -84,13 +87,14 @@ def main():
         type=str,
         help="directory to save dataset params to (where models will be saved)",
     )
+    parser.add_argument("biosample", type=str, help="biosample name")
     parser.add_argument(
         "--threads", type=int, default=9, help="number of threads to use"
     )
     args = parser.parse_args()
     if args.threads == 1:
         for i in range(9):
-            write_dataset_params(i, args.datadir, args.outdir)
+            write_dataset_params(i, args.datadir, args.outdir, args.biosample)
     elif args.threads > 1:
         import itertools
         import multiprocessing as mp
@@ -102,6 +106,7 @@ def main():
                     range(9),
                     itertools.repeat(args.datadir),
                     itertools.repeat(args.outdir),
+                    itertools.repeat(args.biosample),
                 ),
             )
     else:

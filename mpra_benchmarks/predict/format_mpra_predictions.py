@@ -1,13 +1,16 @@
+## This script formats the mpra predictions into a dataframe for easy use
+
 import h5py
 import numpy as np
 import pandas as pd
+import tqdm
 from scipy.stats import pearsonr
 
 ref_ensemble = h5py.File(
-    "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/k562_mpra_snps_ref.h5"
+    "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/for_personalized_genome_paper/k562_mpra_snps_ref.h5"
 )["quantity"][:, 0]
 alt_ensemble = h5py.File(
-    "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/k562_mpra_snps_alt.h5"
+    "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/for_personalized_genome_paper/k562_mpra_snps_alt.h5"
 )["quantity"][:, 0]
 
 ref_ref_ensemble = h5py.File(
@@ -20,17 +23,16 @@ alt_ref_ensemble = h5py.File(
 
 ref = [
     h5py.File(
-        f"/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/k562_mpra_snps_ref_fold_{i}.h5"
+        f"/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/for_personalized_genome_paper/k562_mpra_snps_ref_fold_{i}.h5"
     )["quantity"][:, 0]
     for i in range(1, 10)
 ]
 alt = [
     h5py.File(
-        f"/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/k562_mpra_snps_alt_fold_{i}.h5"
+        f"/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/clipnet/for_personalized_genome_paper/k562_mpra_snps_alt_fold_{i}.h5"
     )["quantity"][:, 0]
     for i in range(1, 10)
 ]
-
 
 procapnet_ref = h5py.File(
     "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/procapnet/k562_mpra_snps_2114_ref_procapnet_folds.h5"
@@ -40,15 +42,20 @@ procapnet_alt = h5py.File(
 )
 
 mpra = pd.read_csv(
-    "/home2/ayh8/clipnet_k562/siraj_mpra/media-4-K562_allelic_mpra.tsv.gz",
+    "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/media-4-K562_allelic_mpra.tsv.gz",
     sep="\t",
 )
 snps = pd.read_csv(
-    "/home2/ayh8/clipnet_k562/siraj_mpra/media-3_oligos_snps_cleaned.tsv.gz", sep="\t"
+    "/fs/cbsubscb17/storage/projects/CLIPNET_transfer/k562_siraj_mpra/media-3_oligos_snps_cleaned.bed.gz",
+    sep="\t",
+    header=None,
+    names=["chrom", "start", "end", "Variant"],
+    index_col=None,
 )
 
+
 holdouts = (
-    pd.read_csv("/home2/ayh8/clipnet_k562/siraj_mpra/clipnet_data_fold_assignments.csv")
+    pd.read_csv("/home2/ayh8/clipnet/data/data_fold_assignments.csv")
     .set_index("chrom")
     .to_dict()["fold"]
 )
@@ -57,7 +64,7 @@ holdouts["chrX"] = 0
 ref_pred = []
 alt_pred = []
 folds = []
-for i, row in snps.iterrows():
+for i, row in tqdm.tqdm(snps.iterrows()):
     chrom = row["chrom"]
     if chrom in holdouts:
         fold = holdouts[chrom]
@@ -133,8 +140,5 @@ pearsons = [
     for fold in range(10)
 ]
 
-# pearsonr(data[data["fold"] == fold]["expt"], data[data["fold"] == fold]["pred_p"])
-pearsonr(data["log2fc_expt"], data["clipnet_pytorch"])
-# PearsonRResult(statistic=0.24444150001598372, pvalue=0.0)
 pearsonr(data["expt"], data["pred_p"])
 # (0.02508640660560832, 3.072458192675234e-40)

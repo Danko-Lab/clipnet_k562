@@ -1,4 +1,4 @@
-# python transfer_learn_k562_proseq.py $fold $gpu
+# python ft_k562_pausing.py $fold $gpu
 
 import logging
 import os
@@ -96,13 +96,13 @@ new_model.compile(
 )
 
 # Create callbacks
-outdir = Path(f"../models/clipnet_k562_pausing/f{fold}/")
-model_filepath = str(outdir.joinpath("clipnet_k562_pausing.h5"))
+outdir = Path("../models/clipnet_k562_pausing/")
+model_filepath = str(outdir.joinpath(f"fold_{fold}.h5"))
 cp = tf.keras.callbacks.ModelCheckpoint(model_filepath, verbose=0, save_best_only=True)
 early_stopping = tf.keras.callbacks.EarlyStopping(verbose=1, patience=10)
 tqdm_callback = TqdmCallback(verbose=1, bar_format="{l_bar}{bar:10}{r_bar}{bar:-10b}")
 csv_logger = CSVLogger(
-    filename=outdir.joinpath("clipnet_k562_pausing.log"),
+    filename=outdir.joinpath(f"fold_{fold}.log"),
     separator=",",
     append=True,
 )

@@ -1,0 +1,139 @@
+# snakemake --printshellcmds --reason --jobs 1 --resources load=100 --dryrun
+# snakemake --printshellcmds --reason --jobs 16 --resources load=100
+
+import os
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Replace with where you want to save output files
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/CTCF_U/"
+# Replace with scratch space directory
+WORKDIR = "/workdir/ayh8/clipnet_finetuning"
+# Replace with location of reference genome
+REFDIR = "/fs/cbsubscb17/storage/data/hg38/ENCODE_reference/"
+
+fold_assignments = "../../data_fold_assignments.csv"
+FOLDS = 10
+
+output_npz = [
+    os.path.join(DATADIR, f"HCT116_data_folds/HCT116_sequence_{fold}.npz")
+    for fold in range(FOLDS)
+]
+output_fa = [
+    os.path.join(DATADIR, f"HCT116_data_folds/HCT116_sequence_{fold}.fa.gz")
+    for fold in range(FOLDS)
+]
+centered_fa = os.path.join(DATADIR, "HCT116_data_folds/HCT116_centered.fa.gz")
+
+
+rule sequence_all:  # A master rule that ensures all the other rules run
+    input:
+        output_npz,
+        output_fa,
+        centered_fa,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get DNA sequence of windows
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule unpack_windows:
+    input:
+        shuf=os.path.join(DATADIR, "HCT116_procap_tss_1kb_windows.bed.gz"),
+        cent=os.path.join(DATADIR, "HCT116_procap_tss_1kb_centered_windows.bed.gz"),
+    output:
+        shuf=os.path.join(WORKDIR, "HCT116_procap_tss_1kb_windows.bed"),
+        cent=os.path.join(WORKDIR, "HCT116_procap_tss_1kb_centered_windows.bed"),
+    shell:
+        """
+        gunzip -c {input.shuf} > {output.shuf}
+        gunzip -c {input.cent} > {output.cent}
+        """
+
+
+rule unpack_fa:
+    input:
+        os.path.join(REFDIR, "hg38.rRNA.fa.gz"),
+    output:
+        os.path.join(WORKDIR, "hg38.rRNA.fa"),
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+rule get_window_sequences:
+    input:
+        fa=os.path.join(WORKDIR, "hg38.rRNA.fa"),
+        bed=os.path.join(WORKDIR, "HCT116_procap_tss_1kb_windows.bed"),
+    output:
+        os.path.join(WORKDIR, "HCT116_sequence.fa"),
+    shell:
+        "bedtools getfasta -fi {input.fa} -bed {input.bed} -fo {output}"
+
+
+rule get_centered_window_sequences:
+    input:
+        fa=os.path.join(WORKDIR, "hg38.rRNA.fa"),
+        bed=os.path.join(WORKDIR, "HCT116_procap_tss_1kb_centered_windows.bed"),
+    output:
+        centered_fa,
+    shell:
+        "bedtools getfasta -fi {input.fa} -bed {input.bed} | bgzip -c > {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Split sequence files into data folds
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule split_sequence:
+    input:
+        fa=os.path.join(WORKDIR, "HCT116_sequence.fa"),
+    resources:
+        load=1,
+    params:
+        fold_assignments=fold_assignments,
+        fold="{fold}",
+    output:
+        fa=os.path.join(DATADIR, "HCT116_data_folds/HCT116_sequence_{fold}.fa.gz"),
+    run:
+        from Bio import SeqIO, bgzf
+        import pandas as pd
+
+        fold_assignments = pd.read_csv(
+            params.fold_assignments, header=0, index_col=None
+        )
+        chroms = list(
+            fold_assignments[fold_assignments["fold"] == int(params.fold)].chrom
+        )
+
+        recs = []
+        with open(input.fa, "rt") as f:
+            for rec in SeqIO.parse(f, "fasta"):
+                chrom = rec.id.split(":")[0].split("_")[-1]
+                if chrom in chroms:
+                    recs.append(rec)
+
+        with bgzf.BgzfWriter(output.fa, "wb") as out:
+            SeqIO.write(recs, out, "fasta")
+
+
+rule numpify_fasta:
+    input:
+        fa=os.path.join(DATADIR, "HCT116_data_folds/HCT116_sequence_{fold}.fa.gz"),
+    output:
+        npz=os.path.join(DATADIR, "HCT116_data_folds/HCT116_sequence_{fold}.npz"),
+    run:
+        import numpy as np
+
+        sys.path.append("../../data_processing_scripts/")
+        import utils
+
+        seq_array = utils.get_twohot_fasta_sequences(input.fa, cores=1)
+        np.savez_compressed(output.npz, seq_array)

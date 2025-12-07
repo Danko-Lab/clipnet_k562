@@ -4,7 +4,7 @@ This repository contains the code used to benchmark deep learning models on MPRA
 
 ## Process SI data
 
-The SI from the paper are provided as xlsx files, which can be slightly annoying to parse. The notebook `process_SI.ipynb` contains code that downloads and transforms these xlsx files into TSVs for easier parsing. The two main TSVs I used are `media-3_oligos_snps_cleaned.tsv.gz` and `media-4-K562_allelic_mpra.tsv.gz`. These have been archived on [Zenodo]().
+The SI from the paper are provided as xlsx files, which can be slightly annoying to parse. The script `download_SI.py` contains code that downloads and transforms these xlsx files into TSVs for easier parsing. The two main TSVs I used are `media-3_oligos_snps_cleaned.tsv.gz` and `media-4-K562_allelic_mpra.tsv.gz`.
 
 ## Generate reporter constructs
 
@@ -13,9 +13,6 @@ Run `create_reporter_constructs.py`. This script will generate the reporter cons
 ```bash
 python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps
 python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps_2114 --procapnet
-
-python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps --dinuc_shuffles 1
-python create_reporter_constructs.py media-3_oligos_snps_cleaned.tsv.gz ../data/mpra/k562_mpra_snps_2114 --dinuc_shuffles 1 --procapnet
 ```
 
 ## Now predict on these sequences
@@ -94,4 +91,5 @@ import h5py
 import numpy as np
 
 # TODO
+# CLEAN UP THIS WHOLE REPO
 ```

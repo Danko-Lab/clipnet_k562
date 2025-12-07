@@ -1,0 +1,206 @@
+# snakemake --printshellcmds --reason --jobs 1 --resources load=100 --dryrun
+# snakemake --printshellcmds --reason --jobs 16 --resources load=100
+
+import os
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Define master rule (forces Snakemake to generate all missing files)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Replace with where you want to save output files
+DATADIR = "/fs/cbsubscb17/storage/projects/CLIPNET/data/A549/"
+# Replace with scratch space directory
+WORKDIR = "/workdir/ayh8/clipnet_finetuning"
+fold_assignments = "../../data_fold_assignments.csv"
+FOLDS = 10
+
+output_npz = [
+    os.path.join(DATADIR, f"A549_data_folds/A549_procap_{fold}.npz")
+    for fold in range(FOLDS)
+]
+merged_bw = expand(os.path.join(DATADIR, "A549_procap_{pm}.bw"), pm=["pl", "mn"])
+
+
+rule procap_all:  # A master rule that ensures all the other rules run
+    input:
+        output_npz,
+        merged_bw,
+    params:
+        WORKDIR,
+    shell:
+        "echo rm -r {params}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Merge bigwig
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule merge_bigwigs:
+    input:
+        pl=[
+            os.path.join(DATADIR, "procap_a549_dex0_rep1_5pl.bw"),
+            os.path.join(DATADIR, "procap_a549_dex0_rep2_5pl.bw"),
+        ],
+        mn=[
+            os.path.join(DATADIR, "procap_a549_dex0_rep1_5mn.bw"),
+            os.path.join(DATADIR, "procap_a549_dex0_rep2_5mn.bw"),
+        ],
+    output:
+        pl=os.path.join(WORKDIR, "A549_procap_pl.bg"),
+        mn=os.path.join(WORKDIR, "A549_procap_mn.bg"),
+    shell:
+        """
+        bigWigMerge {input.pl} {output.pl}
+        bigWigMerge {input.mn} -threshold=-1000000.0 {output.mn}
+        """
+
+
+rule bedSort:
+    input:
+        pl=os.path.join(WORKDIR, "A549_procap_pl.bg"),
+        mn=os.path.join(WORKDIR, "A549_procap_mn.bg"),
+    output:
+        pl=os.path.join(WORKDIR, "A549_procap_pl_sort.bg"),
+        mn=os.path.join(WORKDIR, "A549_procap_mn_sort.bg"),
+    shell:
+        """
+        sort-bed {input.pl} > {output.pl}
+        sort-bed {input.mn} > {output.mn}
+        """
+
+
+rule save_merged_bw:
+    input:
+        os.path.join(WORKDIR, "A549_procap_{pm}_sort.bg"),
+    params:
+        chromsizes="/fs/cbsubscb17/storage/data/hg38/hg38.chrom.sizes",
+    output:
+        os.path.join(DATADIR, "A549_procap_{pm}.bw"),
+    shell:
+        "bedGraphToBigWig {input} {params} {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RPM normalize bedgraph files
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule rpm_bedgraph:
+    input:
+        pl=os.path.join(WORKDIR, "A549_procap_pl_sort.bg"),
+        mn=os.path.join(WORKDIR, "A549_procap_mn_sort.bg"),
+    output:
+        pl=os.path.join(WORKDIR, "A549_procap_pl.rpm.bg"),
+        mn=os.path.join(WORKDIR, "A549_procap_mn.rpm.bg"),
+    shell:
+        """
+        python ../../data_processing_scripts/rpm_bedgraph.py {input} {output}
+        """
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert bedgraph to bigwig
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule bedgraph_to_bigwig:
+    input:
+        os.path.join(WORKDIR, "A549_procap_{pm}.rpm.bg"),
+    params:
+        chromsizes="/fs/cbsubscb17/storage/data/hg38/hg38.chrom.sizes",
+    output:
+        os.path.join(WORKDIR, "A549_procap_{pm}.rpm.bw"),
+    shell:
+        "bedGraphToBigWig {input} {params} {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get PRO-cap signal regions
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule unpack_windows:
+    input:
+        os.path.join(DATADIR, "A549_procap_tss_1kb_windows.bed.gz"),
+    output:
+        os.path.join(WORKDIR, "A549_procap_tss_1kb_windows.bed"),
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+rule get_procap_signal:
+    input:
+        windows=os.path.join(WORKDIR, "A549_procap_tss_1kb_windows.bed"),
+        bw=os.path.join(WORKDIR, "A549_procap_{pm}.rpm.bw"),
+    output:
+        os.path.join(WORKDIR, "A549_procap_{pm}.txt"),
+    shell:
+        "/home/ayh8/bwtool/bwtool extract bed {input} {output}"
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert signal files to csv (easy to read)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule read_signal:
+    input:
+        os.path.join(WORKDIR, "A549_procap_{pm}.txt"),
+    resources:
+        load=1,
+    output:
+        os.path.join(WORKDIR, "A549_procap_{pm}.csv.gz"),
+    shell:
+        """
+        python ../../data_processing_scripts/read_signal.py {input} | \
+            gzip > {output}
+        """
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Split signal files into train, val, and test
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule split_signal:
+    input:
+        os.path.join(WORKDIR, "A549_procap_{pm}.csv.gz"),
+    params:
+        fold_assignments=fold_assignments,
+        fold="{fold}",
+    resources:
+        load=1,
+    output:
+        fold=os.path.join(WORKDIR, "A549_procap_{pm}.{fold}.csv.gz"),
+    run:
+        import pandas as pd
+
+        fold_assignments = pd.read_csv(
+            params.fold_assignments, header=0, index_col=None
+        )
+        chroms = list(
+            fold_assignments[fold_assignments["fold"] == int(params.fold)].chrom
+        )
+        data = pd.read_csv(input[0], header=None, index_col=0)
+        fold = pd.DataFrame(
+            [data.loc[idx] for idx in data.index if idx.split(":")[0] in chroms]
+        )
+        fold.to_csv(output[0], header=False, index=True, compression="gzip")
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Join pl and mn
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+rule join_procap:
+    input:
+        pl=os.path.join(WORKDIR, "A549_procap_pl.{fold}.csv.gz"),
+        mn=os.path.join(WORKDIR, "A549_procap_mn.{fold}.csv.gz"),
+    resources:
+        load=1,
+    output:
+        os.path.join(DATADIR, "A549_data_folds/A549_procap_{fold}.npz"),
+    shell:
+        "python ../../data_processing_scripts/join_signal.py {input} --in_csv {output}"
